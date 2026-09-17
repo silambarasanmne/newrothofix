@@ -36,18 +36,33 @@ app.use(express.static(path.join(__dirname, '../'), {
 
 const auditLogsRoutes = require('./routes/auditLogs');
 
-// API Routes
+// API Routes (Dual Prefix for Local & Vercel Serverless Rewrites)
 app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
+
 app.use('/api/medicines', medicineRoutes);
+app.use('/medicines', medicineRoutes);
+
 app.use('/api/billing', billingRoutes);
+app.use('/billing', billingRoutes);
+
 app.use('/api/reports', reportRoutes);
+app.use('/reports', reportRoutes);
+
 app.use('/api/users', userRoutes);
+app.use('/users', userRoutes);
+
 app.use('/api/prescriptions', prescriptionRoutes);
+app.use('/prescriptions', prescriptionRoutes);
+
 app.use('/api/audit-logs', auditLogsRoutes);
+app.use('/audit-logs', auditLogsRoutes);
 
 // OP API Routes
-app.use('/api', patientRoutes);
 app.use('/api/op-auth', opAuthRoutes);
+app.use('/op-auth', opAuthRoutes);
+
+app.use('/api', patientRoutes);
 
 // SPA Page Fallback Routing
 app.get('/', (req, res) => {

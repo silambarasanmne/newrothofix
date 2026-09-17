@@ -1,4 +1,16 @@
-const { DatabaseSync } = require('node:sqlite');
+let DatabaseSync;
+try {
+  DatabaseSync = require('node:sqlite').DatabaseSync;
+} catch (e1) {
+  try {
+    const BetterSqlite3 = require('better-sqlite3');
+    DatabaseSync = function(dbPath) {
+      return new BetterSqlite3(dbPath);
+    };
+  } catch (e2) {
+    console.warn('SQLite module fallback warning:', e1.message);
+  }
+}
 const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
