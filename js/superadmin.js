@@ -109,7 +109,7 @@ const SuperAdmin = {
     if (createUserForm) {
       createUserForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        this.handleCreateUser();
+        this.handleCreateUser(e);
       });
     }
 
