@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ORTHOFIX SPECIALITY CLINIC â€” Retail Pharmacy POS Billing</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              900: '#0c4a6e',
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/styles.css?v=4.0">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+
+  <div id="app-container" class="flex w-screen h-screen overflow-hidden relative">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar bg-slate-900 text-slate-100 flex flex-col flex-shrink-0 z-50 transition-all duration-300 relative border-r border-slate-800" id="main-sidebar">
+      <div class="sidebar-header p-5 flex items-center gap-3 border-b border-slate-800/80 whitespace-nowrap">
+        <img src="/images/logo.png" alt="ORTHOFIX" class="w-10 h-10 rounded-xl object-cover shadow-md shadow-sky-500/30 bg-white p-1 flex-shrink-0">
+        <div class="brand-info">
+          <h1 class="text-base font-extrabold tracking-tight text-white leading-tight">ORTHOFIX</h1>
+          <p class="text-xs font-semibold text-sky-400">SPECIALITY CLINIC</p>
+        </div>
+      </div>
+
+      <ul class="sidebar-menu list-none p-3 flex-grow flex flex-col gap-1 overflow-y-auto whitespace-nowrap">
+        <li class="menu-category text-[11px] font-extrabold uppercase tracking-widest text-slate-500 px-3 py-2">Main Menu</li>
+        <li>
+          <a href="billing.html" class="nav-link active flex items-center gap-3 px-3 py-2.5 bg-gradient-to-r from-sky-600 to-sky-700 text-white rounded-xl font-bold text-sm shadow-md shadow-sky-600/30 transition-all">
+            <span class="nav-icon text-lg w-6 text-center text-white"><svg class="w-5 h-5 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m-6 4h6m-6 4h6M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></span> <span class="nav-text">Billing / POS</span>
+          </a>
+        </li>
+        <li class="admin-only">
+          <a href="dashboard.html" class="nav-link flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl font-semibold text-sm transition-all">
+            <span class="nav-icon text-lg w-6 text-center text-sky-400"><svg class="w-5 h-5 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></span> <span class="nav-text">Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="history.html" class="nav-link flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl font-semibold text-sm transition-all">
+            <span class="nav-icon text-lg w-6 text-center text-teal-400"><svg class="w-5 h-5 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span> <span class="nav-text">Billing History</span>
+          </a>
+        </li>
+        <li class="menu-category admin-only text-[11px] font-extrabold uppercase tracking-widest text-slate-500 px-3 py-2 mt-2">Outpatients</li>
+        <li class="admin-only">
+          <a href="register.html" class="nav-link flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl font-semibold text-sm transition-all">
+            <span class="nav-icon text-lg w-6 text-center text-rose-400"><svg class="w-5 h-5 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg></span> <span class="nav-text">New Patient</span>
+          </a>
+        </li>
+        <li class="admin-only">
+          <a href="patients.html" class="nav-link flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl font-semibold text-sm transition-all">
+            <span class="nav-icon text-lg w-6 text-center text-purple-400"><svg class="w-5 h-5 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></span> <span class="nav-text">Patient Records</span>
+          </a>
+        </li>
+
+        <li class="menu-category admin-only text-[11px] font-extrabold uppercase tracking-widest text-slate-500 px-3 py-2 mt-2">Management</li>
+        <li class="admin-only">
+          <a href="medicines.html" class="nav-link flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl font-semibold text-sm transition-all">
+            <span class="nav-icon text-lg w-6 text-center text-indigo-400"><svg class="w-5 h-5 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a6.5 6.5 0 00-9.192-9.192l-2.02 2.02a6.5 6.5 0 009.192 9.192l2.02-2.02z M9.213 13.787l5.574-5.574"/></svg></span> <span class="nav-text">Medicine Inventory</span>
+          </a>
+        </li>
+        <li class="admin-only">
+          <a href="reports.html" class="nav-link flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl font-semibold text-sm transition-all">
+            <span class="nav-icon text-lg w-6 text-center text-emerald-400"><svg class="w-5 h-5 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></span> <span class="nav-text">Sales Statements</span>
+          </a>
+        </li>
+        <li class="admin-only">
+          <a href="users.html" class="nav-link flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl font-semibold text-sm transition-all">
+            <span class="nav-icon text-lg w-6 text-center text-amber-400"><svg class="w-5 h-5 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg></span> <span class="nav-text">Worker Management</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer p-3.5 border-t border-slate-800/80 bg-slate-950/60 flex items-center justify-between whitespace-nowrap">
+        <div class="user-badge flex items-center gap-3">
+          <div class="user-avatar w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 font-bold flex items-center justify-center text-xs border border-sky-500/30" id="user-avatar-initials">AD</div>
+          <div class="user-info">
+            <div class="user-name text-xs font-bold text-slate-200 leading-none" id="sidebar-user-name">Administrator</div>
+            <div class="user-role text-[10px] text-sky-400 font-semibold" id="sidebar-user-role">Manager</div>
+          </div>
+        </div>
+        <button class="btn-logout-icon text-slate-400 hover:text-rose-400 hover:bg-rose-500/15 p-2 rounded-lg transition-colors cursor-pointer" onclick="Auth.logout()" title="Logout">
+          <svg class="w-4 h-4 text-slate-400 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper flex-grow flex flex-col h-screen overflow-hidden bg-slate-50">
+      <header class="top-header h-16 bg-white border-b border-slate-200/80 px-6 flex items-center justify-between flex-shrink-0 shadow-sm">
+        <div class="header-title-wrapper flex items-center gap-3">
+          <button class="btn-toggle-sidebar w-9 h-9 bg-slate-100 hover:bg-sky-50 text-slate-700 hover:text-sky-600 border border-slate-200 rounded-xl flex items-center justify-center cursor-pointer transition-colors" title="Toggle Sidebar Pin / Hover Mode">
+            <svg class="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <div class="header-title">
+            <h2 class="text-base font-extrabold text-slate-900 tracking-tight flex items-center"><svg class="w-5 h-5 text-sky-600 mr-2 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m-6 4h6m-6 4h6M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>Retail Pharmacy POS Billing</h2>
+            <p class="text-xs text-slate-500 font-medium">Search medicines, add items to cart, adjust quantities, and print invoices</p>
+          </div>
+        </div>
+        <div class="header-actions flex items-center gap-3">
+          <div class="session-chip bg-emerald-50 border border-emerald-200/80 px-3 py-1.5 rounded-full text-xs text-emerald-700 font-bold flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <strong id="session-time">POS Ready</strong>
+          </div>
+          <button class="btn btn-secondary text-xs px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl flex items-center gap-1.5 transition-colors" onclick="Auth.logout()">
+            <svg class="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg> Logout
+          </button>
+        </div>
+      </header>
+
+      <main class="content-body flex-grow p-4 overflow-hidden">
+        <!-- 2-SECTION SPLIT: LEFT SIDE (MEDICINE SEARCH) | RIGHT SIDE (CURRENT BILL CART) -->
+        <div class="pos-grid grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
+          
+          <!-- SECTION 1 (LEFT): MEDICINE SEARCH & SELECTION -->
+          <div class="pos-left flex flex-col gap-3 h-full overflow-hidden">
+            
+            <!-- NEW: Today's Prescription Search -->
+            <div class="bg-indigo-50 border border-indigo-200 rounded-2xl p-3 shadow-sm flex items-center gap-2">
+              <div class="flex-grow relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 text-xs pointer-events-none">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                </span>
+                <input type="text" id="search-prescription-today" placeholder="Load Today's Prescription (Search by Token or Mobile...)" class="w-full pl-8 pr-3 py-2 bg-white border border-indigo-200 rounded-xl text-xs font-semibold text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all" list="today-prescriptions-list">
+                <datalist id="today-prescriptions-list"></datalist>
+              </div>
+            </div>
+
+            <div class="search-card bg-white border border-slate-200/80 rounded-2xl p-3 shadow-sm flex items-center gap-2">
+              <div class="search-input-group flex-grow relative">
+                <span class="search-icon-inside absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+                  <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </span>
+                <input type="text" id="search-medicine-input" placeholder="Search by Name, Generic, Batch #..." autofocus class="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-sky-600 focus:ring-2 focus:ring-sky-600/10 outline-none transition-all">
+              </div>
+              <select id="filter-category" class="select-filter bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-700 outline-none cursor-pointer">
+                <option value="All">All Categories</option>
+              </select>
+              <select id="filter-status" class="select-filter bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-700 outline-none cursor-pointer">
+                <option value="">All Stock</option>
+                <option value="in_stock" selected>In Stock Only</option>
+                <option value="low_stock">Low Stock</option>
+                <option value="out_of_stock">Out of Stock</option>
+                <option value="expired">Expired</option>
+              </select>
+            </div>
+
+            <div class="medicine-results-container flex-grow overflow-y-auto pr-1">
+              <div class="medicine-grid grid grid-cols-1 sm:grid-cols-2 gap-2.5" id="medicine-grid">
+                <!-- Dynamic Medicine Cards Loaded via JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 2 (RIGHT): CURRENT BILL CART PANEL -->
+          <div class="pos-right bg-white border border-slate-200/80 rounded-2xl shadow-sm flex flex-col h-full overflow-hidden">
+            <div class="cart-header px-4 py-3 border-b border-slate-200/80 bg-slate-50/80 flex justify-between items-center flex-shrink-0">
+              <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                <svg class="w-4 h-4 text-sky-600 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg> Current Bill Cart
+              </h3>
+              <div class="flex items-center gap-2">
+                <button class="btn text-xs px-2.5 py-1 bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold rounded-lg transition-colors border border-sky-200 flex items-center gap-1" id="btn-load-prescription" title="Load from Doctor Prescription">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                  Load Rx
+                </button>
+                <span class="badge badge-instock px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-extrabold uppercase" id="cart-count-badge">0 items</span>
+                <button class="btn btn-danger text-xs px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded-lg transition-colors border border-rose-200" id="btn-clear-cart" title="Clear Cart">Clear</button>
+              </div>
+            </div>
+
+            <!-- MEDICINE ITEMS TABLE AREA WITH EXPLICIT COLUMN PARTITIONING -->
+            <div class="cart-items-wrapper flex-grow overflow-y-auto p-2">
+              <table class="cart-table w-full border-collapse text-xs table-fixed">
+                <thead>
+                  <tr class="border-b border-slate-200 bg-slate-100/70">
+                    <th class="w-[32%] p-2 text-left text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Medicine Name & Details</th>
+                    <th class="w-[15%] p-2 text-right text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Price</th>
+                    <th class="w-[28%] p-2 text-center text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Quantity (Input / Select)</th>
+                    <th class="w-[17%] p-2 text-right text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Total</th>
+                    <th class="w-[8%] p-2 text-center text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="cart-table-body" class="divide-y divide-slate-100">
+                  <!-- Dynamic Cart Rows Loaded via JS -->
+                </tbody>
+                <tfoot id="cart-table-foot" class="border-t-2 border-slate-200 bg-slate-100/90 font-bold text-slate-800 text-[11px]">
+                  <tr>
+                    <td class="p-2.5 font-extrabold text-slate-700">Summary Footer</td>
+                    <td class="p-2.5 text-right text-slate-400">--</td>
+                    <td class="p-2.5 text-center text-slate-800 font-extrabold" id="foot-total-qty">0 Items</td>
+                    <td class="p-2.5 text-right text-sky-700 font-black text-sm" id="foot-total-amount">â‚¹0.00</td>
+                    <td class="p-2.5 text-center"></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <!-- VERTICAL CART FOOTER STACK -->
+            <div class="cart-footer border-t border-slate-200 bg-white p-3.5 flex flex-col gap-2.5 flex-shrink-0">
+              
+              <!-- Vertical Block 1: Customer Info Inputs -->
+              <div class="grid grid-cols-12 gap-2">
+                <input type="text" id="customer-name" placeholder="Customer Name (Optional)" class="col-span-6 p-2 border border-slate-200 rounded-lg text-xs font-semibold bg-slate-50 focus:bg-white focus:border-sky-600 outline-none">
+                <input type="tel" id="customer-phone" placeholder="Mobile Number (Optional)" class="col-span-6 p-2 border border-slate-200 rounded-lg text-xs font-semibold bg-slate-50 focus:bg-white focus:border-sky-600 outline-none">
+              </div>
+
+              <!-- Vertical Block 2: Subtotal & Grand Total Summary Bar -->
+              <div class="flex justify-between items-center bg-slate-100/90 px-4 py-2.5 rounded-xl border border-slate-200/80 text-xs">
+                <div class="summary-pill flex items-center gap-1.5">
+                  <span class="text-slate-600 font-bold">Subtotal:</span>
+                  <strong id="summary-subtotal" class="text-slate-900 font-extrabold text-sm">â‚¹0.00</strong>
+                </div>
+                <div class="summary-pill flex items-center gap-2">
+                  <span class="text-slate-800 font-extrabold text-xs">Grand Total:</span>
+                  <span class="grand-total-amount text-sky-600 font-black text-xl" id="summary-grand-total">â‚¹0.00</span>
+                </div>
+              </div>
+
+              <!-- Vertical Block 3: Single Full-Width Submit Button -->
+              <div class="pt-0.5">
+                <button type="button" class="btn-complete-sale w-full py-3 px-4 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white rounded-xl font-extrabold text-sm shadow-md shadow-sky-600/30 flex items-center justify-center gap-2 transition-all cursor-pointer" id="btn-complete-sale" onclick="Billing.openSubmitPanel()">
+                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                  <span>Submit Bill</span>
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </main>
+
+      <!-- APP FOOTER -->
+      <footer class="app-footer bg-white border-t border-slate-200/80 px-6 py-2.5 flex flex-wrap items-center justify-between text-xs text-slate-500 flex-shrink-0 z-20">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 font-bold text-slate-800">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>ORTHOFIX SPECIALITY CLINIC</span>
+          </div>
+          <span class="text-slate-300 hidden sm:inline">|</span>
+          <span class="text-slate-500 font-medium hidden sm:inline">Pharmacy Management & POS System v3.0</span>
+        </div>
+
+        <div class="flex items-center gap-4 text-[11px] font-semibold text-slate-500">
+          <div class="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200/60">
+            <svg class="w-3.5 h-3.5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span id="footer-live-clock" class="text-slate-700 font-bold tracking-tight">--:--:-- --</span>
+          </div>
+          <span class="text-slate-300 hidden md:inline">â€¢</span>
+          <span class="hidden md:inline">Server: <strong class="text-emerald-600 font-bold">Online (Port 5000)</strong></span>
+          <span class="text-slate-300 hidden lg:inline">â€¢</span>
+          <span class="hidden lg:inline">Â© 2026 ORTHOFIX. All rights reserved.</span>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- SUBMIT BILL CONFIRMATION SUMMARY PANEL -->
+  <div class="modal-overlay fixed inset-0 bg-slate-900/65 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 invisible transition-all duration-200" id="modal-submit-summary">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden">
+      <div class="modal-header p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+        <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+          <svg class="w-5 h-5 text-sky-600 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m-6 4h6m-6 4h6M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Bill Summary & Payment
+        </h3>
+        <button class="btn-close-modal text-slate-400 hover:text-slate-700 text-lg p-1 rounded-lg" onclick="UI.closeModal('modal-submit-summary')">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body p-6 space-y-4">
+        <div class="bg-sky-50/70 border border-sky-200/80 rounded-2xl p-4 space-y-3">
+          <div class="flex justify-between items-center border-b border-sky-200/60 pb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Customer Name:</span>
+            <strong id="panel-bill-name" class="text-sm font-extrabold text-slate-900">-</strong>
+          </div>
+          <div class="flex justify-between items-center border-b border-sky-200/60 pb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Subtotal:</span>
+            <strong id="panel-total-amount" class="text-sm font-extrabold text-slate-800">â‚¹0.00</strong>
+          </div>
+
+          <!-- Discount Selector Block -->
+          <div class="space-y-1.5 pt-1">
+            <label class="text-xs font-extrabold text-slate-700 uppercase tracking-wider block">Discount (Optional):</label>
+            <div class="flex gap-2">
+              <select id="discount-type" class="p-2 border border-slate-200 rounded-xl text-xs font-bold bg-white text-slate-800 outline-none">
+                <option value="fixed">Fixed (â‚¹)</option>
+                <option value="percent">Percent (%)</option>
+              </select>
+              <input type="number" id="discount-value" min="0" placeholder="0" class="flex-grow p-2 border border-slate-200 rounded-xl text-xs font-bold bg-white outline-none">
+            </div>
+          </div>
+
+          <!-- Payment Method Selector Block -->
+          <div class="space-y-1.5 pt-1">
+            <label class="text-xs font-extrabold text-slate-700 uppercase tracking-wider block">Payment Mode:</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" class="pay-btn selected p-2 rounded-xl border border-sky-600 bg-sky-50 text-sky-700 font-extrabold text-xs cursor-pointer transition-all" data-method="Cash">Cash</button>
+              <button type="button" class="pay-btn p-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-xs cursor-pointer transition-all" data-method="UPI">UPI</button>
+              <button type="button" class="pay-btn p-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-xs cursor-pointer transition-all" data-method="Card">Card</button>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center pt-2 border-t border-sky-200/80">
+            <span class="text-sm font-black text-slate-900 uppercase tracking-wider">Final Total:</span>
+            <strong id="panel-final-total" class="text-xl font-black text-sky-600">â‚¹0.00</strong>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+        <button type="button" class="btn btn-secondary px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl font-bold text-xs transition-colors" onclick="UI.closeModal('modal-submit-summary')">Cancel</button>
+        <button type="button" class="btn btn-primary px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-xl font-extrabold text-xs shadow-md shadow-emerald-600/30 flex items-center gap-2 transition-all cursor-pointer" id="btn-confirm-save-bill" onclick="Billing.confirmAndSaveBill()">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg> Save & Complete Bill
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BILL SUBMITTED SUCCESS & PRINT POPUP MODAL -->
+  <div class="modal-overlay fixed inset-0 bg-slate-900/65 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 invisible transition-all duration-200" id="modal-bill-success">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden text-center relative">
+      <button class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100 transition-all cursor-pointer" onclick="Billing.closeSuccessModal()" title="Close Popup">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+      <div class="p-6 pt-8 space-y-4">
+        <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+          <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        </div>
+        <div>
+          <h3 class="text-lg font-extrabold text-slate-900">Bill Created Successfully!</h3>
+          <p class="text-xs text-slate-500 font-medium mt-1">Transaction recorded in system database</p>
+        </div>
+        <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-left space-y-2">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-500 font-bold">Invoice #:</span>
+            <strong id="success-inv-number" class="text-sky-700 font-mono font-bold">-</strong>
+          </div>
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-500 font-bold">Customer:</span>
+            <span id="success-customer-name" class="text-slate-800 font-extrabold">-</span>
+          </div>
+          <div class="flex justify-between items-center text-xs pt-1 border-t border-slate-200/60">
+            <span class="text-slate-700 font-extrabold uppercase">Total Paid:</span>
+            <strong id="success-total-amount" class="text-emerald-600 font-black text-base">â‚¹0.00</strong>
+          </div>
+        </div>
+      </div>
+      <div class="p-4 bg-slate-50 border-t border-slate-200 flex flex-wrap justify-center gap-2.5">
+        <button type="button" class="btn px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-bold text-xs shadow-md shadow-sky-600/30 flex items-center gap-2 transition-all cursor-pointer" onclick="Billing.printSavedInvoice()">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 00-2-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg> Print Invoice
+        </button>
+        <button type="button" class="btn px-4 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs transition-colors cursor-pointer" onclick="Billing.closeSuccessModal()">
+          New Sale
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INVOICE PREVIEW MODAL -->
+  <div class="modal-overlay fixed inset-0 bg-slate-900/65 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 invisible transition-all duration-200" id="modal-invoice">
+    <div class="modal-box modal-lg bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="modal-header p-5 border-b border-slate-200 flex justify-between items-center">
+        <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+          <svg class="w-5 h-5 text-sky-600 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m-6 4h6m-6 4h6M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Tax Invoice Receipt
+        </h3>
+        <button class="btn-close-modal text-slate-400 hover:text-slate-700 text-lg p-1 rounded-lg" onclick="UI.closeModal('modal-invoice')">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body p-6 overflow-y-auto flex-grow" id="invoice-modal-content">
+        <!-- Rendered Printable Invoice HTML -->
+      </div>
+      <div class="modal-footer p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+        <button class="btn btn-secondary px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl font-bold text-xs transition-colors" onclick="UI.closeModal('modal-invoice')">Close</button>
+        <button class="btn btn-primary px-4 py-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white rounded-xl font-bold text-xs shadow-md shadow-sky-600/25 flex items-center gap-2 transition-all" onclick="window.print()">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 00-2-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg> Print Invoice
+        </button>
+        <button class="btn btn-primary px-4 py-2 bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white rounded-xl font-bold text-xs shadow-md shadow-rose-600/25 flex items-center gap-2 transition-all cursor-pointer" onclick="Billing.downloadCurrentModalInvoicePDF()">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg> Download PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load Prescription Modal -->
+  <div class="modal hidden" id="modal-load-prescription">
+    <div class="modal-content max-w-sm w-full mx-4 relative p-0 overflow-hidden bg-white shadow-2xl rounded-2xl border border-slate-200" style="animation: modalSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+      <div class="p-4 border-b border-slate-200 bg-sky-50 flex justify-between items-center">
+        <h3 class="text-sm font-extrabold text-sky-900 flex items-center gap-2">
+          <svg class="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          Load Doctor Prescription
+        </h3>
+        <button class="btn-close-modal text-sky-600 hover:text-sky-900 hover:bg-sky-100 p-1.5 rounded-lg transition-colors" onclick="document.getElementById('modal-load-prescription').classList.remove('active')">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <div class="p-5 bg-white">
+        <p class="text-xs text-slate-500 mb-4">Enter the patient's Token Number or Mobile Number to load their prescribed medicines.</p>
+        <div class="mb-4">
+          <label class="block text-xs font-bold text-slate-700 mb-1">Token # or Mobile</label>
+          <input type="text" id="rx-identifier" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:bg-white focus:border-sky-500 outline-none" placeholder="e.g. 1042 or 9876543210">
+        </div>
+        <button id="btn-fetch-rx" class="w-full py-2.5 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white rounded-lg font-bold text-sm shadow-md transition-all">
+          Load Prescription
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js?v=4.1"></script>
+  <script src="js/html2pdf.bundle.min.js"></script>
+  <script src="js/ui.js?v=4.0"></script>
+  <script src="js/auth.js?v=4.0"></script>
+  <script src="js/billing.js?v=4.3"></script>
+</body>
+</html>

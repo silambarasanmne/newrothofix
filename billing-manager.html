@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ORTHOFIX — Billing Manager Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="/js/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen">
+  <div class="flex h-screen overflow-hidden">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar bg-slate-900 border-r border-slate-800 w-64 flex-shrink-0 flex flex-col justify-between transition-all duration-300">
+      <div>
+        <div class="p-6 flex items-center gap-3 border-b border-slate-800">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-500 to-cyan-500 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+            O
+          </div>
+          <div>
+            <h1 class="font-extrabold text-slate-100 tracking-tight text-base leading-none">ORTHOFIX</h1>
+            <p class="text-xs text-teal-400 font-medium mt-1">Billing Manager Portal</p>
+          </div>
+        </div>
+
+        <nav class="p-4 space-y-1.5">
+          <a href="billing-manager.html" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-teal-500/10 text-teal-400 font-semibold text-sm border border-teal-500/20">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            Billing Overview
+          </a>
+          <a href="patients.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 font-medium text-sm transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Patient Records & Queue
+          </a>
+          <a href="register.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 font-medium text-sm transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+            Patient Registration
+          </a>
+          <a href="billing.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 font-medium text-sm transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            Billing Counter
+          </a>
+          <a href="users.html" class="admin-only flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 font-medium text-sm transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            User Management & Audits
+          </a>
+        </nav>
+      </div>
+
+      <div class="p-4 border-t border-slate-800">
+        <div class="flex items-center justify-between mb-3 px-2">
+          <div class="flex items-center gap-3">
+            <div id="user-avatar" class="w-8 h-8 rounded-full bg-teal-500/20 text-teal-400 font-bold flex items-center justify-center text-xs">
+              M
+            </div>
+            <div>
+              <p id="user-full-name" class="text-xs font-semibold text-slate-200">Billing Manager</p>
+              <span id="user-role-badge" class="text-[10px] text-teal-400 bg-teal-950 px-1.5 py-0.5 rounded border border-teal-800">Manager</span>
+            </div>
+          </div>
+        </div>
+        <button onclick="Auth.logout()" class="w-full py-2 px-3 text-xs font-semibold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 rounded-lg transition-colors flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col overflow-y-auto bg-slate-950">
+      
+      <!-- Top Header -->
+      <header class="p-6 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-20 flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-bold text-slate-100">Billing Manager Dashboard</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Review billing activity, checkout statuses, staff performance & reprint invoices</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="btn-refresh-manager" class="px-3.5 py-2 text-xs font-semibold text-teal-300 bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/30 rounded-xl transition-colors flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Refresh Records
+          </button>
+        </div>
+      </header>
+
+      <div class="p-6 space-y-6">
+        
+        <!-- Summary KPI Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl">
+            <p class="text-xs font-medium text-slate-400">Total Billed Today</p>
+            <h3 id="stat-total-billed" class="text-2xl font-extrabold text-teal-400 mt-1">₹0.00</h3>
+            <p class="text-[11px] text-slate-500 mt-1">All processed checkout sales</p>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl">
+            <p class="text-xs font-medium text-slate-400">Total Transactions</p>
+            <h3 id="stat-total-count" class="text-2xl font-extrabold text-cyan-400 mt-1">0</h3>
+            <p class="text-[11px] text-slate-500 mt-1">Completed invoices</p>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl">
+            <p class="text-xs font-medium text-slate-400">Cash / Digital Split</p>
+            <h3 id="stat-split-info" class="text-lg font-bold text-slate-200 mt-1">Cash: ₹0 | Digital: ₹0</h3>
+            <p class="text-[11px] text-slate-500 mt-1">Cash vs UPI/Card payments</p>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl">
+            <p class="text-xs font-medium text-slate-400">Checkout Status</p>
+            <h3 class="text-2xl font-extrabold text-emerald-400 mt-1">100% Completed</h3>
+            <p class="text-[11px] text-slate-500 mt-1">No pending checkout delays</p>
+          </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-3 flex-1 min-w-[280px]">
+            <div class="relative flex-1">
+              <input type="text" id="search-invoice-input" placeholder="Search Invoice #, Patient Name, or Mobile..." class="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-teal-500">
+              <svg class="w-4 h-4 text-slate-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div>
+              <input type="date" id="filter-start-date" class="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-xl px-3 py-2">
+            </div>
+            <span class="text-slate-600 text-xs">to</span>
+            <div>
+              <input type="date" id="filter-end-date" class="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-xl px-3 py-2">
+            </div>
+
+            <select id="filter-payment-method" class="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-xl px-3 py-2">
+              <option value="All">All Payment Methods</option>
+              <option value="Cash">Cash</option>
+              <option value="UPI">UPI</option>
+              <option value="Card">Card</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Billing Records Table -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+            <h3 class="font-bold text-slate-200 text-sm">Billing Records & Invoices</h3>
+            <span id="records-count-badge" class="text-xs text-slate-400 bg-slate-800 px-2.5 py-1 rounded-full">Showing 0 invoices</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 uppercase font-semibold text-[11px] border-b border-slate-800">
+                <tr>
+                  <th class="px-6 py-3.5">Invoice #</th>
+                  <th class="px-6 py-3.5">Date & Time</th>
+                  <th class="px-6 py-3.5">Patient Details</th>
+                  <th class="px-6 py-3.5">Doctor Name</th>
+                  <th class="px-6 py-3.5">Biller / Staff</th>
+                  <th class="px-6 py-3.5 text-right">Grand Total</th>
+                  <th class="px-6 py-3.5">Payment Method</th>
+                  <th class="px-6 py-3.5">Checkout Status</th>
+                  <th class="px-6 py-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="managerTableBody" class="divide-y divide-slate-800/50 text-slate-300">
+                <!-- Dynamic Rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- View/Print Invoice Modal -->
+  <div id="modal-invoice-detail" class="modal fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+        <h3 class="font-bold text-slate-200 text-sm">Invoice Details & Reprint</h3>
+        <button onclick="UI.closeModal('modal-invoice-detail')" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+      <div id="invoice-detail-content" class="p-6 overflow-y-auto max-h-[70vh]">
+        <!-- Rendered Invoice HTML -->
+      </div>
+      <div class="p-4 border-t border-slate-800 bg-slate-950 flex items-center justify-between">
+        <button onclick="UI.closeModal('modal-invoice-detail')" class="px-4 py-2 text-xs font-semibold text-slate-400 bg-slate-800 hover:bg-slate-700 rounded-xl">Close</button>
+        <div class="flex items-center gap-2">
+          <button id="btn-reprint-pdf" class="px-4 py-2 text-xs font-semibold text-teal-300 bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/30 rounded-xl transition-colors flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            Print / Download PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/billing-manager.js"></script>
+</body>
+</html>

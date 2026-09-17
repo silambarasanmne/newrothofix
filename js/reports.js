@@ -1,0 +1,264 @@
+/* ==========================================================================
+   FINANCIAL REPORTS, STATEMENTS & HISTORY MODULE
+   ========================================================================== */
+
+const Reports = {
+  historySales: [],
+
+  initHistory() {
+    this.bindHistoryEvents();
+    this.loadHistory();
+  },
+
+  bindHistoryEvents() {
+    const searchInput = document.getElementById('history-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', () => this.loadHistory());
+    }
+
+    const paySelect = document.getElementById('history-filter-pay');
+    if (paySelect) {
+      paySelect.addEventListener('change', () => this.loadHistory());
+    }
+
+    const startDateInput = document.getElementById('history-start-date');
+    const endDateInput = document.getElementById('history-end-date');
+
+    if (startDateInput) startDateInput.addEventListener('change', () => this.loadHistory());
+    if (endDateInput) endDateInput.addEventListener('change', () => this.loadHistory());
+  },
+
+  async loadHistory() {
+    try {
+      const search = document.getElementById('history-search-input')?.value || '';
+      const pay = document.getElementById('history-filter-pay')?.value || 'All';
+      const startDate = document.getElementById('history-start-date')?.value || '';
+      const endDate = document.getElementById('history-end-date')?.value || '';
+
+      const queryParams = new URLSearchParams();
+      if (search) queryParams.append('invoice_number', search);
+      if (pay && pay !== 'All') queryParams.append('payment_method', pay);
+      if (startDate) queryParams.append('start_date', startDate);
+      if (endDate) queryParams.append('end_date', endDate);
+
+      const res = await API.get(`/billing/history?${queryParams.toString()}`);
+      if (res.success) {
+        this.historySales = res.sales;
+        this.renderHistoryTable();
+      }
+    } catch (error) {
+      UI.showToast('Failed to load billing history.', 'error');
+    }
+  },
+
+  renderHistoryTable() {
+    const tbody = document.getElementById('history-table-body');
+    if (!tbody) return;
+
+    if (this.historySales.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="9" style="text-align: center; padding: 2rem; color: #64748b;">
+            No bills match the selected filter criteria.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = this.historySales.map(s => `
+      <tr>
+        <td><strong style="color: #0284c7;">${s.invoice_number}</strong></td>
+        <td>${UI.formatDateTime(s.created_at)}</td>
+        <td>
+          <strong>${s.customer_name || 'Walk-in Customer'}</strong>
+          ${s.customer_phone ? `<br><small style="color: #64748b;"><svg class="w-3 h-3 text-slate-400 inline-block mr-1 align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>${s.customer_phone}</small>` : ''}
+        </td>
+        <td>${UI.formatCurrency(s.subtotal)}</td>
+        <td style="color: #ef4444;">-${UI.formatCurrency(s.discount_amount)}</td>
+        <td style="font-weight: 800; color: #0f172a;">${UI.formatCurrency(s.grand_total)}</td>
+        <td><span class="badge badge-instock">${s.payment_method}</span></td>
+        <td><small style="color: #64748b;">${s.worker_name}</small></td>
+        <td style="text-align: center;">
+          <div class="flex items-center justify-center gap-1.5">
+            <button type="button" class="btn btn-secondary btn-sm px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all" onclick="Reports.viewInvoice('${s.invoice_number}')" title="View & Print Invoice">
+              <svg class="w-4 h-4 text-sky-600 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            </button>
+            <button type="button" class="btn btn-primary btn-sm px-3 py-1.5 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all" onclick="Reports.downloadInvoicePDF('${s.invoice_number}')" title="Download PDF">
+              <svg class="w-4 h-4 text-red-300 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg> Download PDF
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  },
+
+  async downloadInvoicePDF(invoiceNumber) {
+    try {
+      UI.showToast('Preparing PDF download...', 'info');
+      const res = await API.get(`/billing/invoice/${invoiceNumber}`);
+      if (res.success && res.invoice) {
+        await UI.downloadInvoiceAsPDF(res.invoice);
+      } else {
+        UI.showToast('Failed to fetch invoice details.', 'error');
+      }
+    } catch (error) {
+      console.error('Failed to download invoice PDF:', error);
+      UI.showToast('Failed to download invoice PDF.', 'error');
+    }
+  },
+
+  async viewInvoice(invoiceNumber) {
+    try {
+      const res = await API.get(`/billing/invoice/${invoiceNumber}`);
+      if (res.success && res.invoice) {
+        window.currentActiveInvoice = res.invoice;
+        const modalContainer = document.getElementById('invoice-modal-content');
+        if (modalContainer) {
+          modalContainer.innerHTML = UI.renderInvoiceHtml(res.invoice);
+          UI.openModal('modal-invoice');
+        }
+      }
+    } catch (error) {
+      UI.showToast('Failed to load invoice details.', 'error');
+    }
+  },
+
+  async printInvoiceDirect(invoiceNumber) {
+    try {
+      const res = await API.get(`/billing/invoice/${invoiceNumber}`);
+      if (res.success && res.invoice) {
+        UI.printInvoice(res.invoice);
+      } else {
+        UI.showToast('Failed to fetch invoice details.', 'error');
+      }
+    } catch (error) {
+      UI.showToast('Failed to print invoice.', 'error');
+    }
+  },
+
+  // DATE-WISE STATEMENT WORKFLOW
+  async loadDateWiseStatement() {
+    const fromDate = document.getElementById('statement-from-date')?.value || '';
+    const toDate = document.getElementById('statement-to-date')?.value || '';
+
+    try {
+      const queryParams = new URLSearchParams();
+      if (fromDate) queryParams.append('from_date', fromDate);
+      if (toDate) queryParams.append('to_date', toDate);
+
+      const res = await API.get(`/reports/date-wise?${queryParams.toString()}`);
+      if (res.success) {
+        this.renderDateWiseStatement(res);
+      }
+    } catch (error) {
+      UI.showToast('Failed to load date-wise statement.', 'error');
+    }
+  },
+
+  renderDateWiseStatement(data) {
+    const summary = data.summary;
+    const sales = data.sales;
+
+    // Render Cards
+    const totalBillsEl = document.getElementById('stmt-total-bills');
+    const grossSalesEl = document.getElementById('stmt-gross-sales');
+    const totalDiscountsEl = document.getElementById('stmt-total-discounts');
+    const netRevenueEl = document.getElementById('stmt-net-revenue');
+    const avgBillEl = document.getElementById('stmt-avg-bill');
+
+    if (totalBillsEl) totalBillsEl.textContent = summary.total_bills;
+    if (grossSalesEl) grossSalesEl.textContent = UI.formatCurrency(summary.gross_sales);
+    if (totalDiscountsEl) totalDiscountsEl.textContent = UI.formatCurrency(summary.total_discounts);
+    if (netRevenueEl) netRevenueEl.textContent = UI.formatCurrency(summary.net_revenue);
+    if (avgBillEl) avgBillEl.textContent = UI.formatCurrency(summary.avg_bill_value);
+
+    // Render Table
+    const tbody = document.getElementById('date-wise-table-body');
+    if (!tbody) return;
+
+    if (sales.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:2rem;">No sales records found for selected date range.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = sales.map(s => `
+      <tr>
+        <td><strong>${s.invoice_number}</strong></td>
+        <td>${UI.formatDateTime(s.created_at)}</td>
+        <td>${s.customer_name || 'Walk-in'}</td>
+        <td>${UI.formatCurrency(s.subtotal)}</td>
+        <td style="color:#ef4444;">-${UI.formatCurrency(s.discount_amount)}</td>
+        <td style="font-weight:800; color:#0284c7;">${UI.formatCurrency(s.grand_total)}</td>
+        <td><span class="badge badge-instock">${s.payment_method}</span></td>
+        <td>${s.worker_name}</td>
+        <td style="text-align: center;">
+          <button class="btn btn-primary btn-sm px-3 py-1.5 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all mx-auto" onclick="Reports.downloadInvoicePDF('${s.invoice_number}')">
+            <svg class="w-4 h-4 text-red-300 mr-1 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg> Download PDF
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  },
+
+  // YEAR-WISE STATEMENT WORKFLOW
+  async loadYearlyStatement() {
+    const year = document.getElementById('statement-year')?.value || new Date().getFullYear();
+
+    try {
+      const res = await API.get(`/reports/yearly?year=${year}`);
+      if (res.success) {
+        this.renderYearlyStatement(res);
+      }
+    } catch (error) {
+      UI.showToast('Failed to load yearly statement.', 'error');
+    }
+  },
+
+  renderYearlyStatement(data) {
+    const tbody = document.getElementById('yearly-table-body');
+    const tfoot = document.getElementById('yearly-table-foot');
+    if (!tbody) return;
+
+    tbody.innerHTML = data.months.map(m => `
+      <tr>
+        <td><strong>${m.month_name}</strong></td>
+        <td style="text-align: center;">${m.bills_count}</td>
+        <td style="text-align: right;">${UI.formatCurrency(m.gross_sales)}</td>
+        <td style="text-align: right; color: #ef4444;">-${UI.formatCurrency(m.discount_amount)}</td>
+        <td style="text-align: right; font-weight: 800; color: #0284c7;">${UI.formatCurrency(m.net_revenue)}</td>
+      </tr>
+    `).join('');
+
+    if (tfoot) {
+      tfoot.innerHTML = `
+        <tr style="background-color: #f1f5f9; font-weight: 800; font-size: 0.95rem;">
+          <td>TOTAL (${data.year})</td>
+          <td style="text-align: center;">${data.totals.total_bills}</td>
+          <td style="text-align: right;">${UI.formatCurrency(data.totals.gross_sales)}</td>
+          <td style="text-align: right; color: #ef4444;">-${UI.formatCurrency(data.totals.total_discounts)}</td>
+          <td style="text-align: right; color: #0284c7;">${UI.formatCurrency(data.totals.net_revenue)}</td>
+        </tr>
+      `;
+    }
+  },
+
+  async exportSalesExcel() {
+    const fromDate = document.getElementById('statement-from-date')?.value || '';
+    const toDate = document.getElementById('statement-to-date')?.value || '';
+    const endpoint = `/reports/export-sales-excel?from_date=${fromDate}&to_date=${toDate}`;
+    await API.downloadFile(endpoint, `Sales_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (document.getElementById('history-table-body')) {
+    Reports.initHistory();
+  }
+  if (document.getElementById('date-wise-table-body')) {
+    Reports.loadDateWiseStatement();
+    Reports.loadYearlyStatement();
+  }
+});
+
+window.Reports = Reports;
