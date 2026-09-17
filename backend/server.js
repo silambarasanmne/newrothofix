@@ -104,9 +104,13 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../login.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`=======================================================`);
-  console.log(`🚀 ORTHOFIX SPECIALITY CLINIC Server running on port ${PORT}`);
-  console.log(`=======================================================`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`=======================================================`);
+    console.log(`🚀 ORTHOFIX SPECIALITY CLINIC Server running on port ${PORT}`);
+    console.log(`=======================================================`);
+  });
+}
+
+module.exports = app;
 

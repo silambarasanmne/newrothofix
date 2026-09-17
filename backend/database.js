@@ -3,21 +3,41 @@ const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 
-const dbDir = path.join(__dirname, '../database');
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
+let dbDir = path.join(__dirname, '../database');
+let dbPath = path.join(dbDir, 'pharmacy.db');
+
+if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+  const tmpPath = path.join('/tmp', 'pharmacy.db');
+  try {
+    if (!fs.existsSync(tmpPath) && fs.existsSync(dbPath)) {
+      fs.copyFileSync(dbPath, tmpPath);
+    }
+    dbPath = tmpPath;
+  } catch (e) {
+    console.warn('Vercel DB copy warning:', e.message);
+  }
+} else {
+  if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+  }
 }
 
-const dbPath = path.join(dbDir, 'pharmacy.db');
 const db = new DatabaseSync(dbPath);
 
-// SQLite Ultra Performance Engine Tuning
-db.exec('PRAGMA journal_mode = WAL;');
-db.exec('PRAGMA synchronous = NORMAL;');
-db.exec('PRAGMA foreign_keys = ON;');
-db.exec('PRAGMA cache_size = -64000;');   // 64MB In-Memory Cache
-db.exec('PRAGMA temp_store = MEMORY;');   // In-Memory Temp Storage
-db.exec('PRAGMA mmap_size = 268435456;'); // 256MB Memory Mapped I/O
+// SQLite Engine Tuning
+try {
+  if (process.env.VERCEL) {
+    db.exec('PRAGMA journal_mode = MEMORY;');
+  } else {
+    db.exec('PRAGMA journal_mode = WAL;');
+  }
+  db.exec('PRAGMA synchronous = NORMAL;');
+  db.exec('PRAGMA foreign_keys = ON;');
+  db.exec('PRAGMA cache_size = -64000;');
+  db.exec('PRAGMA temp_store = MEMORY;');
+} catch (e) {
+  console.warn('SQLite PRAGMA tuning warning:', e.message);
+}
 
 function initDb() {
   // 1. Users Table
