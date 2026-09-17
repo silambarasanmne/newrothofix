@@ -13,9 +13,8 @@ COPY package*.json ./
 # Install production dependencies
 RUN npm ci --only=production
 
-# Copy application backend and frontend files
-COPY backend ./backend
-COPY frontend ./frontend
+# Copy application source files
+COPY . .
 
 # Create persistent directory for SQLite database
 RUN mkdir -p database
