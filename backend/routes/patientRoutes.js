@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const patientController = require('../controllers/patientController');
-const { authenticateToken, requireAdmin } = require('./auth');
+const { authenticateToken, requireAdmin, requireRole } = require('./auth');
 
 // REST API endpoints
-router.post('/patients', authenticateToken, patientController.registerPatient);
-router.put('/patients/:id', authenticateToken, patientController.updatePatient);
+router.post('/patients', authenticateToken, requireRole('OP Worker'), patientController.registerPatient);
+router.put('/patients/:id', authenticateToken, requireRole('OP Worker'), patientController.updatePatient);
 router.delete('/patients/:id', authenticateToken, requireAdmin, patientController.deletePatient);
 router.get('/patients/export', authenticateToken, patientController.exportPatientsCSV);
 router.get('/patients', authenticateToken, patientController.getPatients);

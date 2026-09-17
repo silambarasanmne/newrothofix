@@ -20,9 +20,10 @@ const Auth = {
   getRoleLandingPage(role) {
     switch (role) {
       case 'Super Admin':
+        return 'superadmin.html';
       case 'Admin / Billing Manager':
       case 'Admin':
-        return 'dashboard.html';
+        return 'superadmin.html';
       case 'Medical Manager':
       case 'Manager':
       case 'Billing Manager':
@@ -283,9 +284,14 @@ const Auth = {
     }
   },
 
-  logout() {
+  async logout() {
     if (this.idleTimer) clearTimeout(this.idleTimer);
     if (this.warningTimer) clearTimeout(this.warningTimer);
+    try {
+      await API.post('/auth/logout');
+    } catch (e) {
+      // Ignore network errors on logout
+    }
     API.removeToken();
     if (typeof UI !== 'undefined') {
       UI.showToast('Logged out successfully.', 'info');
@@ -298,6 +304,13 @@ const Auth = {
 
 document.addEventListener('DOMContentLoaded', () => {
   Auth.initPageGuard();
+});
+
+// Re-validate session when user navigates using browser Back/Forward buttons (bfcache)
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    Auth.initPageGuard();
+  }
 });
 
 window.Auth = Auth;

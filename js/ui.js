@@ -90,6 +90,43 @@ const UI = {
     });
   },
 
+  showLoading() {
+    let loader = document.getElementById('global-ui-loader');
+    if (!loader) {
+      loader = document.createElement('div');
+      loader.id = 'global-ui-loader';
+      loader.className = 'fixed inset-0 bg-slate-950/50 backdrop-blur-xs z-[9999] flex items-center justify-center';
+      loader.innerHTML = `
+        <div class="bg-slate-900 border border-slate-800 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-slate-200 text-xs font-bold">
+          <svg class="w-5 h-5 text-sky-400 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>Loading...</span>
+        </div>
+      `;
+      document.body.appendChild(loader);
+    }
+    loader.style.display = 'flex';
+  },
+
+  hideLoading() {
+    const loader = document.getElementById('global-ui-loader');
+    if (loader) {
+      loader.style.display = 'none';
+    }
+  },
+
+  escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  },
+
   showToast(message, type = 'info') {
     let container = document.getElementById('toast-container');
     if (!container) {

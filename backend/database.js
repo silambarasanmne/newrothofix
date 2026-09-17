@@ -271,29 +271,16 @@ function initDb() {
 }
 
 function seedData() {
-  const salt = bcrypt.genSaltSync(10);
-  const adminPassword = bcrypt.hashSync('Admin@123', salt);
-  const workerPassword = bcrypt.hashSync('Worker@123', salt);
+  // Empty users table completely and seed ONLY superadmin account
+  db.exec('DELETE FROM users;');
 
-  // 1. Seed Users (with INSERT OR IGNORE)
+  const salt = bcrypt.genSaltSync(10);
   const insertUser = db.prepare(`
-    INSERT OR IGNORE INTO users (username, password, full_name, email, role, is_active)
+    INSERT INTO users (username, password, full_name, email, role, is_active)
     VALUES (?, ?, ?, ?, ?, 1)
   `);
 
-  insertUser.run('superadmin', adminPassword, 'Super Administrator', 'superadmin@medicare.com', 'Super Admin');
-  insertUser.run('superadminadmin', adminPassword, 'Super Administrator', 'superadminadmin@medicare.com', 'Super Admin');
-  insertUser.run('admin', adminPassword, 'System Administrator', 'admin@medicare.com', 'Super Admin');
-  insertUser.run('medmanager', adminPassword, 'Medical Manager', 'medmanager@medicare.com', 'Medical Manager');
-  insertUser.run('medmanagermanager', adminPassword, 'Medical Manager', 'medmanagermanager@medicare.com', 'Medical Manager');
-  insertUser.run('manager', adminPassword, 'Management Operations', 'manager@medicare.com', 'Medical Manager');
-  insertUser.run('doctor', workerPassword, 'Dr. Specialist', 'doctor@medicare.com', 'Doctor');
-  insertUser.run('opworker', workerPassword, 'OP Receptionist', 'opworker@medicare.com', 'OP Worker');
-  insertUser.run('billworker', workerPassword, 'Billing Cashier', 'billworker@medicare.com', 'Medical Billing Worker');
-  insertUser.run('worker', workerPassword, 'Rahul Sharma (Billing Staff)', 'worker@medicare.com', 'Medical Billing Worker');
-  insertUser.run('anita', workerPassword, 'Anita Roy (Senior Pharmacist)', 'anita@medicare.com', 'Medical Billing Worker');
-  insertUser.run('karan', workerPassword, 'Karan Patel (Billing Executive)', 'karan@medicare.com', 'Medical Billing Worker');
-  insertUser.run('suresh', adminPassword, 'Suresh Nair (Store Inventory Manager)', 'suresh@medicare.com', 'Medical Manager');
+  insertUser.run('superadmin', bcrypt.hashSync('superadmin', salt), 'Super Administrator', 'superadmin@clinic.com', 'Super Admin');
 
   // 2. Seed Medicines (with INSERT OR IGNORE)
   const insertMed = db.prepare(`

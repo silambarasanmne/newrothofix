@@ -24,6 +24,14 @@ app.options('*', cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Strict Global Cache Prevention Middleware to ensure Browser Back/Forward navigation revalidates
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0, private');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  next();
+});
+
 // Serve frontend static assets with no-cache headers to ensure immediate updates
 app.use(express.static(path.join(__dirname, '../'), {
   maxAge: 0,
@@ -99,6 +107,14 @@ app.get('/reports', (req, res) => {
 
 app.get('/users', (req, res) => {
   res.sendFile(path.join(__dirname, '../users.html'));
+});
+
+app.get('/superadmin', (req, res) => {
+  res.sendFile(path.join(__dirname, '../superadmin.html'));
+});
+
+app.get('/superadmin.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '../superadmin.html'));
 });
 
 // OP Pages

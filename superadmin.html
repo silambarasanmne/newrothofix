@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ORTHOFIX SPECIALITY CLINIC — Superadmin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              900: '#0c4a6e',
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-sky-500 selection:text-white">
+
+  <div id="app-container" class="flex w-screen h-screen overflow-hidden relative">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar bg-slate-900/90 backdrop-blur-xl text-slate-100 flex flex-col flex-shrink-0 z-50 transition-all duration-300 relative border-r border-slate-800" id="main-sidebar">
+      <div class="sidebar-header p-5 flex items-center gap-3 border-b border-slate-800/80 whitespace-nowrap">
+        <img src="/images/logo.png" alt="ORTHOFIX" class="w-10 h-10 rounded-xl object-cover shadow-lg shadow-sky-500/20 bg-white p-1 flex-shrink-0">
+        <div class="brand-info">
+          <h1 class="text-base font-extrabold tracking-tight text-white leading-tight">ORTHOFIX</h1>
+          <p class="text-xs font-black text-purple-400 uppercase tracking-widest">SUPER ADMIN</p>
+        </div>
+      </div>
+
+      <ul class="sidebar-menu list-none p-3 flex-grow flex flex-col gap-1.5 overflow-y-auto whitespace-nowrap">
+        <li class="menu-category text-[11px] font-extrabold uppercase tracking-widest text-slate-500 px-3 py-2">Select Table Screen</li>
+        
+        <li>
+          <button onclick="SuperAdmin.switchSection('op')" id="side-nav-op" class="sa-side-btn w-full flex items-center gap-3 px-3.5 py-3 bg-gradient-to-r from-sky-600 to-sky-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-sky-600/30 transition-all text-left">
+            <span class="nav-icon text-lg w-6 text-center text-white">📋</span> 
+            <span class="nav-text">OP Patient Table</span>
+          </button>
+        </li>
+
+        <li>
+          <button onclick="SuperAdmin.switchSection('doctor')" id="side-nav-doctor" class="sa-side-btn w-full flex items-center gap-3 px-3.5 py-3 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl font-semibold text-sm transition-all text-left">
+            <span class="nav-icon text-lg w-6 text-center text-indigo-400">🩺</span> 
+            <span class="nav-text">Doctor Consultant Table</span>
+          </button>
+        </li>
+
+        <li>
+          <button onclick="SuperAdmin.switchSection('billing')" id="side-nav-billing" class="sa-side-btn w-full flex items-center gap-3 px-3.5 py-3 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl font-semibold text-sm transition-all text-left">
+            <span class="nav-icon text-lg w-6 text-center text-emerald-400">💰</span> 
+            <span class="nav-text">Billing Sale Table</span>
+          </button>
+        </li>
+
+        <li>
+          <button onclick="SuperAdmin.switchSection('worker')" id="side-nav-worker" class="sa-side-btn w-full flex items-center gap-3 px-3.5 py-3 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl font-semibold text-sm transition-all text-left">
+            <span class="nav-icon text-lg w-6 text-center text-purple-400">🔑</span> 
+            <span class="nav-text">Worker Management</span>
+          </button>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer p-3.5 border-t border-slate-800/80 bg-slate-950/60 flex items-center justify-between whitespace-nowrap">
+        <div class="user-badge flex items-center gap-3">
+          <div class="avatar w-9 h-9 rounded-full bg-gradient-to-tr from-purple-500 to-sky-400 text-white font-black text-xs flex items-center justify-center shadow-lg shadow-purple-500/20 flex-shrink-0" id="user-avatar">SA</div>
+          <div class="user-meta">
+            <h4 class="text-xs font-bold text-slate-100 leading-tight" id="user-full-name">Super Administrator</h4>
+            <span class="text-[10px] font-black text-purple-400" id="user-role-badge">Super Admin</span>
+          </div>
+        </div>
+        <button class="btn-logout-icon text-slate-400 hover:text-rose-400 hover:bg-rose-500/15 p-2 rounded-lg transition-colors cursor-pointer" onclick="Auth.logout()" title="Logout">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper flex-grow flex flex-col h-screen overflow-hidden bg-slate-950 text-slate-100">
+      
+      <!-- Top Header Bar -->
+      <header class="top-header h-16 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-6 flex items-center justify-between flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <button class="btn-toggle-sidebar w-9 h-9 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-xl flex items-center justify-center cursor-pointer transition-colors" title="Toggle Navigation">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <div>
+            <h2 class="text-lg font-black text-white tracking-tight flex items-center gap-2" id="sa-active-section-title">
+              📋 OP Patient Table
+            </h2>
+          </div>
+        </div>
+
+        <!-- Top Header Navigation Pills -->
+        <div class="flex items-center gap-2">
+          <button onclick="SuperAdmin.switchSection('op')" id="top-btn-op" class="sa-top-btn px-3.5 py-1.5 bg-sky-600 text-white rounded-xl text-xs font-bold transition-all border border-sky-500 shadow-md">
+            OP Patient Table
+          </button>
+          <button onclick="SuperAdmin.switchSection('doctor')" id="top-btn-doctor" class="sa-top-btn px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-indigo-400 rounded-xl text-xs font-bold transition-all border border-slate-700">
+            Doctor Consultant Table
+          </button>
+          <button onclick="SuperAdmin.switchSection('billing')" id="top-btn-billing" class="sa-top-btn px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded-xl text-xs font-bold transition-all border border-slate-700">
+            Billing Sale Table
+          </button>
+          <button onclick="SuperAdmin.switchSection('worker')" id="top-btn-worker" class="sa-top-btn px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-purple-400 rounded-xl text-xs font-bold transition-all border border-slate-700">
+            Worker Management
+          </button>
+          <button onclick="SuperAdmin.loadAllData()" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold transition-all" title="Refresh Table Data">
+            <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Body Container: Full Screen Table Views -->
+      <main class="flex-grow p-6 overflow-hidden flex flex-col h-[calc(100vh-4rem)]">
+        
+        <!-- 1. OP PATIENT TABLE SECTION -->
+        <section id="sec-op" class="sa-section flex-grow flex flex-col h-full overflow-hidden bg-slate-900/80 border border-slate-800 p-5 rounded-2xl shadow-xl">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 flex-shrink-0">
+            <div>
+              <h3 class="text-xl font-black text-white flex items-center gap-2">
+                <span>📋 OP Patient Details Table</span>
+              </h3>
+              <p class="text-xs text-slate-400">Registered Outpatients in the OP system</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="text" id="sa-op-search" placeholder="Search Token, Name, Mobile..." class="px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-sky-500 w-64">
+            </div>
+          </div>
+
+          <div class="flex-grow overflow-y-auto rounded-xl border border-slate-800 bg-slate-950/40">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 uppercase tracking-wider font-extrabold border-b border-slate-800 sticky top-0 z-10">
+                <tr>
+                  <th class="px-5 py-3.5">Token #</th>
+                  <th class="px-5 py-3.5">Patient Name</th>
+                  <th class="px-5 py-3.5">Age</th>
+                  <th class="px-5 py-3.5">Mobile Number</th>
+                  <th class="px-5 py-3.5">Symptoms / Issues</th>
+                  <th class="px-5 py-3.5">Registration Time</th>
+                  <th class="px-5 py-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="sa-op-tbody" class="divide-y divide-slate-800/60">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 2. DOCTOR CONSULTANT TABLE SECTION -->
+        <section id="sec-doctor" class="sa-section hidden flex-grow flex flex-col h-full overflow-hidden bg-slate-900/80 border border-slate-800 p-5 rounded-2xl shadow-xl">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 flex-shrink-0">
+            <div>
+              <h3 class="text-xl font-black text-white flex items-center gap-2">
+                <span>🩺 Doctor Consultant Details Table</span>
+              </h3>
+              <p class="text-xs text-slate-400">Doctor prescriptions, symptoms & notes</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <select id="sa-doc-status-filter" class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-sky-500">
+                <option value="all">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="Billed">Billed</option>
+              </select>
+              <input type="text" id="sa-doc-search" placeholder="Search Token, Doctor, Patient..." class="px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-sky-500 w-64">
+            </div>
+          </div>
+
+          <div class="flex-grow overflow-y-auto rounded-xl border border-slate-800 bg-slate-950/40">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 uppercase tracking-wider font-extrabold border-b border-slate-800 sticky top-0 z-10">
+                <tr>
+                  <th class="px-5 py-3.5">Token #</th>
+                  <th class="px-5 py-3.5">Patient Details</th>
+                  <th class="px-5 py-3.5">Doctor Consultant</th>
+                  <th class="px-5 py-3.5">Patient Symptoms</th>
+                  <th class="px-5 py-3.5">Doctor Notes / Remarks</th>
+                  <th class="px-5 py-3.5">Status</th>
+                  <th class="px-5 py-3.5">Date & Time</th>
+                </tr>
+              </thead>
+              <tbody id="sa-doc-tbody" class="divide-y divide-slate-800/60">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 3. BILLING SALE TABLE SECTION -->
+        <section id="sec-billing" class="sa-section hidden flex-grow flex flex-col h-full overflow-hidden bg-slate-900/80 border border-slate-800 p-5 rounded-2xl shadow-xl">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 flex-shrink-0">
+            <div>
+              <h3 class="text-xl font-black text-white flex items-center gap-2">
+                <span>💰 Billing Sale Details Table</span>
+              </h3>
+              <p class="text-xs text-slate-400">Completed pharmacy sales and cashier billing log</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <select id="sa-sale-pay-filter" class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-sky-500">
+                <option value="all">All Payment Methods</option>
+                <option value="Cash">Cash</option>
+                <option value="UPI">UPI</option>
+                <option value="Card">Card</option>
+              </select>
+              <input type="text" id="sa-sale-search" placeholder="Search Invoice #, Customer, Biller..." class="px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-sky-500 w-64">
+            </div>
+          </div>
+
+          <div class="flex-grow overflow-y-auto rounded-xl border border-slate-800 bg-slate-950/40">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 uppercase tracking-wider font-extrabold border-b border-slate-800 sticky top-0 z-10">
+                <tr>
+                  <th class="px-5 py-3.5">Invoice #</th>
+                  <th class="px-5 py-3.5">Customer Name</th>
+                  <th class="px-5 py-3.5">Subtotal</th>
+                  <th class="px-5 py-3.5">Discount</th>
+                  <th class="px-5 py-3.5">Grand Total</th>
+                  <th class="px-5 py-3.5">Payment</th>
+                  <th class="px-5 py-3.5">Biller / Doctor</th>
+                  <th class="px-5 py-3.5 text-right">Details</th>
+                </tr>
+              </thead>
+              <tbody id="sa-sale-tbody" class="divide-y divide-slate-800/60">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 4. WORKER MANAGEMENT SECTION -->
+        <section id="sec-worker" class="sa-section hidden flex-grow flex flex-col h-full overflow-hidden space-y-4">
+          
+          <!-- User Creation Form Card -->
+          <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-2xl shadow-xl flex-shrink-0">
+            <h3 class="text-base font-black text-white mb-2">
+              🔑 Create Username & Password Credentials based on Screen
+            </h3>
+
+            <form id="sa-create-user-form" onsubmit="SuperAdmin.handleCreateUser(event)" class="space-y-3">
+              
+              <!-- Screen Selection Cards -->
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div data-role="OP Worker" class="screen-select-card border-2 border-sky-500 bg-sky-500/10 ring-2 ring-sky-500 p-2.5 rounded-xl cursor-pointer hover:border-sky-500 transition-all text-center">
+                  <h4 class="font-black text-white text-xs">OP Screen</h4>
+                  <p class="text-[10px] text-slate-400">OP Registration (op)</p>
+                </div>
+
+                <div data-role="Doctor" class="screen-select-card border-2 border-slate-800 bg-slate-950 p-2.5 rounded-xl cursor-pointer hover:border-sky-500 transition-all text-center">
+                  <h4 class="font-black text-white text-xs">Doctor Screen</h4>
+                  <p class="text-[10px] text-slate-400">Doctor Consultations (doctor)</p>
+                </div>
+
+                <div data-role="Medical Billing Worker" class="screen-select-card border-2 border-slate-800 bg-slate-950 p-2.5 rounded-xl cursor-pointer hover:border-sky-500 transition-all text-center">
+                  <h4 class="font-black text-white text-xs">Billing Worker Screen</h4>
+                  <p class="text-[10px] text-slate-400">Pharmacy Cashier (billingworker)</p>
+                </div>
+
+                <div data-role="Medical Manager" class="screen-select-card border-2 border-slate-800 bg-slate-950 p-2.5 rounded-xl cursor-pointer hover:border-sky-500 transition-all text-center">
+                  <h4 class="font-black text-white text-xs">Billing Manager Screen</h4>
+                  <p class="text-[10px] text-slate-400">Store & Inventory (billingmanager)</p>
+                </div>
+
+                <div data-role="Super Admin" class="screen-select-card border-2 border-slate-800 bg-slate-950 p-2.5 rounded-xl cursor-pointer hover:border-sky-500 transition-all text-center">
+                  <h4 class="font-black text-white text-xs">Super Admin Screen</h4>
+                  <p class="text-[10px] text-slate-400">System Admin (superadmin)</p>
+                </div>
+              </div>
+              <input type="hidden" id="sa-user-role" value="OP Worker">
+
+              <!-- Input Row with Password Visibility Eye Icon -->
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-3 pt-1">
+                <input type="text" id="sa-new-fullname" placeholder="Full Name *" required class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+                <input type="text" id="sa-new-username" placeholder="Username *" required class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+                
+                <div class="relative">
+                  <input type="password" id="sa-new-password" placeholder="Password *" required class="w-full px-3 py-2 pr-9 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+                  <button type="button" onclick="SuperAdmin.togglePasswordVisibility('sa-new-password', 'sa-pass-eye-icon')" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors" title="Toggle password visibility">
+                    <svg id="sa-pass-eye-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <button type="submit" onclick="SuperAdmin.handleCreateUser(event)" class="py-2 bg-sky-600 hover:bg-sky-500 text-white font-extrabold rounded-xl text-xs shadow-md shadow-sky-600/30 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                  <span>Create Credentials</span>
+                </button>
+              </div>
+
+            </form>
+          </div>
+
+          <!-- Accounts Table -->
+          <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl shadow-xl flex-grow flex flex-col overflow-hidden">
+            <div class="flex items-center justify-between mb-3 flex-shrink-0">
+              <h3 class="text-base font-black text-white">👥 System Accounts Directory</h3>
+              <input type="text" id="sa-user-search" placeholder="Search Username, Role..." class="px-4 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-sky-500 w-56">
+            </div>
+
+            <div class="flex-grow overflow-y-auto rounded-xl border border-slate-800 bg-slate-950/40">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-950 text-slate-400 uppercase tracking-wider font-extrabold border-b border-slate-800 sticky top-0 z-10">
+                  <tr>
+                    <th class="px-4 py-3">ID</th>
+                    <th class="px-4 py-3">Full Name</th>
+                    <th class="px-4 py-3">Username</th>
+                    <th class="px-4 py-3">Password</th>
+                    <th class="px-4 py-3">Assigned Screen Role</th>
+                    <th class="px-4 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="sa-user-tbody" class="divide-y divide-slate-800/60">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- MODAL 1: VIEW INVOICE DETAILS -->
+  <div id="sa-invoice-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl p-6">
+      <div id="sa-invoice-modal-content">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="mt-4 pt-3 border-t border-slate-800 text-right">
+        <button onclick="SuperAdmin.closeInvoiceModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-all">
+          Close Invoice
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: RESET PASSWORD -->
+  <div id="sa-reset-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl p-6">
+      <h3 class="text-lg font-black text-white">Reset User Password</h3>
+      <p class="text-xs text-slate-400 mt-1">Set a new password for <span id="sa-reset-username-label" class="font-bold text-sky-400"></span></p>
+
+      <div class="mt-4 space-y-3">
+        <div>
+          <label class="block text-xs text-slate-300 font-semibold mb-1">New Password</label>
+          <input type="password" id="sa-reset-new-password" placeholder="Enter new password" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end gap-3">
+        <button onclick="SuperAdmin.closeResetModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold">
+          Cancel
+        </button>
+        <button onclick="SuperAdmin.submitResetPassword()" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shadow-md shadow-amber-600/30">
+          Reset Password
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Core JavaScript Libraries -->
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/superadmin.js"></script>
+</body>
+</html>

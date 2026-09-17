@@ -31,7 +31,14 @@ function authenticateToken(req, res, next) {
 
 // Middleware to check for Admin role
 function requireAdmin(req, res, next) {
-  if (!req.user || (req.user.role !== 'Super Admin' && req.user.role !== 'Admin / Billing Manager' && req.user.role !== 'Admin' && req.user.role !== 'Manager' && req.user.role !== 'Medical Manager' && req.user.role !== 'Billing Manager')) {
+  if (!req.user) {
+    return res.status(401).json({ success: false, message: 'Authentication required.' });
+  }
+
+  const role = String(req.user.role || '').toLowerCase();
+  const isAdmin = role.includes('admin') || role.includes('manager') || role === 'super admin' || role === 'superadmin';
+
+  if (!isAdmin) {
     logAudit(req, req.user, 'UNAUTHORIZED_ATTEMPT', 'AUTH', 'Page/API', req.originalUrl, 'Denied non-admin attempt to access admin resource');
     return res.status(403).json({ 
       success: false, 
@@ -48,20 +55,39 @@ function requireRole(...allowedRoles) {
       return res.status(401).json({ success: false, message: 'Authentication required.' });
     }
 
-    const userRole = req.user.role;
-    // Super Admin and Admin always pass
-    if (userRole === 'Super Admin' || userRole === 'Admin / Billing Manager' || userRole === 'Admin') {
+    const userRole = String(req.user.role || '').trim();
+
+    // Super Admin / Admin always pass all role checks
+    if (userRole === 'Super Admin' || userRole === 'Admin / Billing Manager' || userRole === 'Admin' || userRole.toLowerCase().includes('admin')) {
       return next();
     }
 
-    if (allowedRoles.includes(userRole)) {
+    // Expand role aliases for exact matching
+    const roleMap = {
+      'op worker': ['op worker', 'receptionist', 'op'],
+      'doctor': ['doctor'],
+      'billing worker': ['billing worker', 'medical billing worker', 'cashier', 'biller'],
+      'medical billing worker': ['billing worker', 'medical billing worker', 'cashier', 'biller'],
+      'billing manager': ['billing manager', 'medical manager', 'manager'],
+      'medical manager': ['billing manager', 'medical manager', 'manager']
+    };
+
+    const normalizedUserRole = userRole.toLowerCase();
+    const isMatch = allowedRoles.some(allowed => {
+      const normalizedAllowed = String(allowed).toLowerCase();
+      if (normalizedAllowed === normalizedUserRole) return true;
+      const aliases = roleMap[normalizedAllowed] || [normalizedAllowed];
+      return aliases.includes(normalizedUserRole);
+    });
+
+    if (isMatch) {
       return next();
     }
 
     logAudit(req, req.user, 'UNAUTHORIZED_ATTEMPT', 'AUTH', 'API', req.originalUrl, `User role '${userRole}' denied access to ${req.originalUrl}`);
     return res.status(403).json({
       success: false,
-      message: `Access denied. Requires one of the following roles: ${allowedRoles.join(', ')}`
+      message: `Access denied. Requires role: ${allowedRoles.join(', ')}`
     });
   };
 }

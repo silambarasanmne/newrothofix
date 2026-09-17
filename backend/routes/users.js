@@ -6,11 +6,14 @@ const { authenticateToken, requireAdmin } = require('./auth');
 const { logAudit } = require('../middleware/audit');
 
 const VALID_ROLES = [
+  'Super Admin',
   'Admin / Billing Manager',
   'Billing Manager',
+  'Medical Manager',
   'Doctor',
   'OP Worker',
-  'Billing Worker'
+  'Billing Worker',
+  'Medical Billing Worker'
 ];
 
 // GET /api/users - List all users (Admin only)
@@ -165,6 +168,31 @@ router.post('/:id/reset-password', authenticateToken, requireAdmin, (req, res) =
   } catch (error) {
     console.error('Reset password error:', error);
     return res.status(500).json({ success: false, message: 'Failed to reset password.' });
+  }
+});
+
+// DELETE /api/users/:id - Delete user account (Admin only)
+router.delete('/:id', authenticateToken, requireAdmin, (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    if (parseInt(userId, 10) === req.user.id) {
+      return res.status(400).json({ success: false, message: 'You cannot delete your logged-in Super Admin account.' });
+    }
+
+    const existing = db.prepare('SELECT username FROM users WHERE id = ?').get(userId);
+    if (!existing) {
+      return res.status(404).json({ success: false, message: 'User account not found.' });
+    }
+
+    db.prepare('DELETE FROM users WHERE id = ?').run(userId);
+
+    logAudit(req, req.user, 'USER_DELETE', 'USERS', 'User', userId, `Admin deleted user account '${existing.username}'`);
+
+    return res.json({ success: true, message: `User account '${existing.username}' deleted successfully.` });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to delete user.' });
   }
 });
 

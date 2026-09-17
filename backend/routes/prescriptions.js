@@ -229,4 +229,64 @@ router.get('/patient/:identifier', authenticateToken, (req, res) => {
   }
 });
 
+// GET /api/prescriptions/all - Fetch all prescriptions & consultations for Super Admin reporting
+router.get('/all', authenticateToken, (req, res) => {
+  try {
+    const { status, doctor_name, search, start_date, end_date } = req.query;
+    let sql = `
+      SELECT p.*, 
+             COALESCE(c.patient_name, pat.patient_name) AS patient_name, 
+             COALESCE(c.age, pat.age) AS age, 
+             COALESCE(c.patient_mobile, pat.mobile, p.patient_mobile) AS mobile, 
+             COALESCE(c.symptoms, pat.symptoms) AS symptoms, 
+             c.doctor_comment
+      FROM prescriptions p
+      LEFT JOIN consultations c ON p.id = c.prescription_id
+      LEFT JOIN patients pat ON p.patient_token = pat.token
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (status && status !== 'all') {
+      sql += ` AND p.status = ?`;
+      params.push(status);
+    }
+
+    if (doctor_name && doctor_name.trim() !== '') {
+      sql += ` AND p.doctor_name LIKE ?`;
+      params.push(`%${doctor_name.trim()}%`);
+    }
+
+    if (search && search.trim() !== '') {
+      const q = `%${search.trim()}%`;
+      sql += ` AND (p.patient_token LIKE ? OR c.patient_name LIKE ? OR pat.patient_name LIKE ? OR p.doctor_name LIKE ? OR c.symptoms LIKE ?)`;
+      params.push(q, q, q, q, q);
+    }
+
+    if (start_date) {
+      sql += ` AND date(p.created_at) >= date(?)`;
+      params.push(start_date);
+    }
+
+    if (end_date) {
+      sql += ` AND date(p.created_at) <= date(?)`;
+      params.push(end_date);
+    }
+
+    sql += ` ORDER BY p.id DESC`;
+
+    const stmt = db.prepare(sql);
+    const prescriptions = stmt.all(...params);
+
+    return res.json({
+      success: true,
+      prescriptions
+    });
+  } catch (error) {
+    console.error('Fetch all prescriptions error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to fetch doctor consultations.' });
+  }
+});
+
 module.exports = router;
+

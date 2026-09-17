@@ -24,28 +24,65 @@ const API = {
   },
 
   getToken() {
-    return localStorage.getItem('medicare_token') || localStorage.getItem('token');
+    if (typeof sessionStorage !== 'undefined') {
+      const sToken = sessionStorage.getItem('medicare_token') || sessionStorage.getItem('token');
+      if (sToken) return sToken;
+    }
+    if (typeof localStorage !== 'undefined') {
+      return localStorage.getItem('medicare_token') || localStorage.getItem('token');
+    }
+    return null;
   },
 
   setToken(token) {
-    localStorage.setItem('medicare_token', token);
-    localStorage.setItem('token', token);
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem('medicare_token', token);
+      sessionStorage.setItem('token', token);
+    }
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('medicare_token', token);
+      localStorage.setItem('token', token);
+    }
   },
 
   removeToken() {
-    localStorage.removeItem('medicare_token');
-    localStorage.removeItem('medicare_user');
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem('medicare_token');
+      sessionStorage.removeItem('medicare_user');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
+    }
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('medicare_token');
+      localStorage.removeItem('medicare_user');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
   },
 
   getUser() {
-    const raw = localStorage.getItem('medicare_user');
-    return raw ? JSON.parse(raw) : null;
+    if (typeof sessionStorage !== 'undefined') {
+      const raw = sessionStorage.getItem('medicare_user');
+      if (raw) {
+        try { return JSON.parse(raw); } catch (e) {}
+      }
+    }
+    if (typeof localStorage !== 'undefined') {
+      const raw = localStorage.getItem('medicare_user');
+      if (raw) {
+        try { return JSON.parse(raw); } catch (e) {}
+      }
+    }
+    return null;
   },
 
   setUser(user) {
-    localStorage.setItem('medicare_user', JSON.stringify(user));
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem('medicare_user', JSON.stringify(user));
+    }
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('medicare_user', JSON.stringify(user));
+    }
   },
 
   async request(endpoint, options = {}) {
