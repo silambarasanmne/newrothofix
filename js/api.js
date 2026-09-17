@@ -8,10 +8,12 @@ const API = {
       if (window.location.protocol === 'file:') {
         return 'http://localhost:5000/api';
       }
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        if (window.location.port !== '5000') {
-          return 'http://localhost:5000/api';
-        }
+      if (window.location.port === '5000') {
+        return '/api';
+      }
+      const host = window.location.hostname || 'localhost';
+      if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.')) {
+        return `http://${host}:5000/api`;
       }
     }
     return '/api';
