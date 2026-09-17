@@ -3,7 +3,23 @@
    ========================================================================== */
 
 const API = {
-  baseUrl: '/api',
+  getBaseUrl() {
+    if (typeof window !== 'undefined') {
+      if (window.location.protocol === 'file:') {
+        return 'http://localhost:5000/api';
+      }
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        if (window.location.port !== '5000') {
+          return 'http://localhost:5000/api';
+        }
+      }
+    }
+    return '/api';
+  },
+
+  get baseUrl() {
+    return this.getBaseUrl();
+  },
 
   getToken() {
     return localStorage.getItem('medicare_token') || localStorage.getItem('token');
@@ -50,8 +66,23 @@ const API = {
     };
 
     try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, config);
-      const data = await response.json();
+      const response = await fetch(`${this.getBaseUrl()}${endpoint}`, config);
+      const contentType = response.headers.get('content-type') || '';
+
+      let data;
+      if (contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const textData = await response.text();
+        if (!response.ok) {
+          throw new Error(`Server returned HTTP ${response.status}. Please check backend server on port 5000.`);
+        }
+        try {
+          data = JSON.parse(textData);
+        } catch (e) {
+          throw new Error('Backend server error. Please ensure Node server is running on port 5000.');
+        }
+      }
 
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
