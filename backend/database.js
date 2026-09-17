@@ -271,12 +271,10 @@ function initDb() {
 }
 
 function seedData() {
-  // Empty users table completely and seed ONLY superadmin account
-  db.exec('DELETE FROM users;');
-
+  // Ensure default superadmin account exists without clearing user-created accounts
   const salt = bcrypt.genSaltSync(10);
   const insertUser = db.prepare(`
-    INSERT INTO users (username, password, full_name, email, role, is_active)
+    INSERT OR IGNORE INTO users (username, password, full_name, email, role, is_active)
     VALUES (?, ?, ?, ?, ?, 1)
   `);
 

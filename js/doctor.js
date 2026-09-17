@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const consultPatientAge = document.getElementById('consultPatientAge');
     const consultPatientMobile = document.getElementById('consultPatientMobile');
     const consultPatientToken = document.getElementById('consultPatientToken');
+    const consultPatientDate = document.getElementById('consultPatientDate');
     const consultPatientIssues = document.getElementById('consultPatientIssues');
     const consultDoctorComment = document.getElementById('consultDoctorComment');
 
@@ -118,6 +119,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (consultPatientAge) consultPatientAge.value = res.data.age ? `${res.data.age} Years` : '';
                 if (consultPatientMobile) consultPatientMobile.value = res.data.mobile || '';
                 if (consultPatientToken) consultPatientToken.value = `#${res.data.token}`;
+                if (consultPatientDate) {
+                    const regDate = res.data.created_at ? new Date(res.data.created_at).toLocaleDateString('en-IN', {
+                        day: '2-digit', month: 'short', year: 'numeric'
+                    }) : '';
+                    consultPatientDate.value = regDate;
+                }
                 if (consultPatientIssues) consultPatientIssues.value = res.data.symptoms || 'No issues reported.';
                 if (consultDoctorComment) consultDoctorComment.value = res.data.doctor_comment || '';
 
@@ -350,6 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     // Reset inputs
                     if (consultPatientToken) consultPatientToken.value = '';
+                    if (consultPatientDate) consultPatientDate.value = '';
                     if (consultPatientMobile) consultPatientMobile.value = '';
                     if (consultPatientName) consultPatientName.value = '';
                     if (consultPatientAge) consultPatientAge.value = '';
