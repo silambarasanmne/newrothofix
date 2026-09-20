@@ -4,7 +4,7 @@ const { logAudit } = require('../middleware/audit');
 /**
  * Validate Patient Input Fields
  */
-const validatePatientInput = ({ patient_name, age, mobile, symptoms }) => {
+const validatePatientInput = ({ patient_name, age, gender, mobile, symptoms }) => {
   const errors = {};
 
   // Patient Name
@@ -26,6 +26,11 @@ const validatePatientInput = ({ patient_name, age, mobile, symptoms }) => {
     } else if (ageNum < 0 || ageNum > 120) {
       errors.age = 'Age must be between 0 and 120';
     }
+  }
+
+  // Gender
+  if (!gender || typeof gender !== 'string' || !['Male', 'Female', 'Other'].includes(gender.trim())) {
+    errors.gender = 'Gender must be Male, Female, or Other';
   }
 
   // Mobile Number
@@ -54,9 +59,9 @@ const validatePatientInput = ({ patient_name, age, mobile, symptoms }) => {
  */
 exports.registerPatient = (req, res) => {
   try {
-    const { patient_name, age, mobile, symptoms } = req.body;
+    const { patient_name, age, gender = 'Male', mobile, symptoms } = req.body;
 
-    const validation = validatePatientInput({ patient_name, age, mobile, symptoms });
+    const validation = validatePatientInput({ patient_name, age, gender, mobile, symptoms });
     if (!validation.isValid) {
       return res.status(400).json({
         success: false,
@@ -68,6 +73,7 @@ exports.registerPatient = (req, res) => {
     const newPatient = PatientModel.create({
       patient_name: patient_name.trim(),
       age: Number(age),
+      gender: gender.trim(),
       mobile: mobile.trim(),
       symptoms: symptoms.trim()
     });
@@ -97,9 +103,9 @@ exports.registerPatient = (req, res) => {
 exports.updatePatient = (req, res) => {
   try {
     const { id } = req.params;
-    const { patient_name, age, mobile, symptoms } = req.body;
+    const { patient_name, age, gender = 'Male', mobile, symptoms } = req.body;
 
-    const validation = validatePatientInput({ patient_name, age, mobile, symptoms });
+    const validation = validatePatientInput({ patient_name, age, gender, mobile, symptoms });
     if (!validation.isValid) {
       return res.status(400).json({
         success: false,
@@ -111,6 +117,7 @@ exports.updatePatient = (req, res) => {
     const updated = PatientModel.update(id, {
       patient_name: patient_name.trim(),
       age: Number(age),
+      gender: gender.trim(),
       mobile: mobile.trim(),
       symptoms: symptoms.trim()
     });
@@ -293,16 +300,17 @@ exports.exportPatientsCSV = (req, res) => {
     const patients = PatientModel.exportAll({ search, fromDate, toDate, date });
 
     // Generate CSV Header
-    let csv = 'Token,Patient Name,Patient ID,Age,Mobile Number,Symptoms / Issues,Registration Date\n';
+    let csv = 'Token,Patient Name,Patient ID,Age,Gender,Mobile Number,Symptoms / Issues,Registration Date\n';
 
     // Generate CSV Rows with escaping
     patients.forEach(p => {
       const escapedName = `"${String(p.patient_name || '').replace(/"/g, '""')}"`;
+      const escapedGender = `"${String(p.gender || 'Male').replace(/"/g, '""')}"`;
       const escapedMobile = `"${String(p.mobile || '').replace(/"/g, '""')}"`;
       const escapedSymptoms = `"${String(p.symptoms || '').replace(/"/g, '""')}"`;
       const dateStr = `"${String(p.created_at || '')}"`;
       
-      csv += `${p.token},${escapedName},OP-${p.id},${p.age},${escapedMobile},${escapedSymptoms},${dateStr}\n`;
+      csv += `${p.token},${escapedName},OP-${p.id},${p.age},${escapedGender},${escapedMobile},${escapedSymptoms},${dateStr}\n`;
     });
 
     res.setHeader('Content-Type', 'text/csv');

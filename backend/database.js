@@ -150,6 +150,7 @@ function initDb() {
       token INTEGER NOT NULL,
       patient_name TEXT NOT NULL,
       age INTEGER NOT NULL,
+      gender TEXT DEFAULT 'Male',
       mobile TEXT NOT NULL,
       symptoms TEXT NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -216,6 +217,107 @@ function initDb() {
     );
   `);
 
+  // 10. Vendors Table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS vendors (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      contact_person TEXT,
+      phone TEXT,
+      email TEXT,
+      address TEXT,
+      gst_number TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  // 11. Vendor Purchases Table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS vendor_purchases (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      purchase_number TEXT UNIQUE NOT NULL,
+      vendor_id INTEGER NOT NULL,
+      vendor_name TEXT NOT NULL,
+      invoice_number TEXT,
+      purchase_date TEXT NOT NULL,
+      total_amount REAL NOT NULL,
+      payment_status TEXT DEFAULT 'Paid',
+      notes TEXT,
+      created_by TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (vendor_id) REFERENCES vendors(id)
+    );
+  `);
+
+  // 12. Vendor Purchase Items Table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS vendor_purchase_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      purchase_id INTEGER NOT NULL,
+      medicine_id INTEGER NOT NULL,
+      medicine_name TEXT NOT NULL,
+      batch_number TEXT NOT NULL,
+      expiry_date TEXT NOT NULL,
+      purchase_price REAL NOT NULL,
+      selling_price REAL NOT NULL,
+      quantity INTEGER NOT NULL,
+      total_price REAL NOT NULL,
+      FOREIGN KEY (purchase_id) REFERENCES vendor_purchases(id) ON DELETE CASCADE,
+      FOREIGN KEY (medicine_id) REFERENCES medicines(id)
+    );
+  `);
+
+  // 13. Purchase Returns Table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS purchase_returns (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      return_number TEXT UNIQUE NOT NULL,
+      vendor_id INTEGER,
+      vendor_name TEXT NOT NULL,
+      purchase_number TEXT,
+      return_date TEXT NOT NULL,
+      return_reason TEXT NOT NULL,
+      total_refund_amount REAL NOT NULL,
+      notes TEXT,
+      created_by TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  // 14. Purchase Return Items Table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS purchase_return_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      return_id INTEGER NOT NULL,
+      medicine_id INTEGER NOT NULL,
+      medicine_name TEXT NOT NULL,
+      batch_number TEXT,
+      expiry_date TEXT,
+      quantity INTEGER NOT NULL,
+      unit_price REAL NOT NULL,
+      total_refund REAL NOT NULL,
+      FOREIGN KEY (return_id) REFERENCES purchase_returns(id) ON DELETE CASCADE,
+      FOREIGN KEY (medicine_id) REFERENCES medicines(id)
+    );
+  `);
+
+  // 15. Expired Disposals Table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS expired_disposals (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      disposal_number TEXT UNIQUE NOT NULL,
+      medicine_id INTEGER NOT NULL,
+      medicine_name TEXT NOT NULL,
+      batch_number TEXT,
+      expiry_date TEXT,
+      quantity INTEGER NOT NULL,
+      loss_amount REAL NOT NULL,
+      reason TEXT NOT NULL,
+      user_name TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
   // Helper for safe schema migration (adding new columns if absent)
   function addColumnIfNotExists(table, columnDef) {
     try {
@@ -237,7 +339,10 @@ function initDb() {
   addColumnIfNotExists('prescriptions', 'diagnosis TEXT');
   addColumnIfNotExists('prescriptions', 'submission_status TEXT DEFAULT "Submitted"');
 
-  addColumnIfNotExists('consultations', 'doctor_id INTEGER');
+  addColumnIfNotExists('patients', 'gender TEXT DEFAULT "Male"');
+  addColumnIfNotExists('vendor_purchases', 'bill_image TEXT');
+  addColumnIfNotExists('medicines', 'vendor_id INTEGER');
+  addColumnIfNotExists('medicines', 'vendor_name TEXT');
 
   addColumnIfNotExists('sales', 'consultation_id INTEGER');
   addColumnIfNotExists('sales', 'doctor_id INTEGER');
@@ -271,7 +376,7 @@ function initDb() {
 }
 
 function seedData() {
-  // Ensure default superadmin account exists without clearing user-created accounts
+  // Ensure default superadmin account exists
   const salt = bcrypt.genSaltSync(10);
   const insertUser = db.prepare(`
     INSERT OR IGNORE INTO users (username, password, full_name, email, role, is_active)
@@ -279,43 +384,6 @@ function seedData() {
   `);
 
   insertUser.run('superadmin', bcrypt.hashSync('superadmin', salt), 'Super Administrator', 'superadmin@clinic.com', 'Super Admin');
-
-  // 2. Seed Medicines (with INSERT OR IGNORE)
-  const insertMed = db.prepare(`
-    INSERT OR IGNORE INTO medicines 
-    (name, generic_name, category, manufacturer, batch_number, expiry_date, purchase_price, selling_price, current_stock, minimum_stock, gst_percent, barcode, description)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `);
-
-  const medicines = [
-    ['Paracetamol 500mg', 'Acetaminophen', 'Analgesics', 'Cipla Ltd', 'PCM2026A', '2027-12-31', 6.0, 10.0, 45, 10, 12.0, '8901234567890', 'Common pain reliever and fever reducer'],
-    ['Cetirizine 10mg', 'Cetirizine HCl', 'Antihistamines', 'Sun Pharma', 'CET2026B', '2027-08-15', 2.5, 5.0, 60, 15, 12.0, '8901234567891', 'Antiallergic tablet for relief from cold & allergy'],
-    ['Azithromycin 500mg', 'Azithromycin', 'Antibiotics', 'Lupin Pharma', 'AZI2026C', '2026-11-20', 30.0, 45.0, 25, 5, 12.0, '8901234567892', 'Broad-spectrum antibiotic tablet'],
-    ['Pantoprazole 40mg', 'Pantoprazole Sodium', 'Antacids', 'Torrent Pharma', 'PAN2026D', '2027-04-10', 7.0, 12.0, 50, 10, 12.0, '8901234567893', 'Proton pump inhibitor for acidity and ulcers'],
-    ['Amoxicillin 500mg', 'Amoxicillin Trihydrate', 'Antibiotics', 'Dr. Reddys', 'AMX2026E', '2027-01-25', 15.0, 25.0, 4, 10, 12.0, '8901234567894', 'Penicillin antibiotic for bacterial infections (Low Stock!)'],
-    ['Ibuprofen 400mg', 'Ibuprofen', 'Analgesics', 'Abbott India', 'IBU2026F', '2027-06-30', 8.0, 15.0, 0, 10, 12.0, '8901234567895', 'Nonsteroidal anti-inflammatory drug (Out of Stock!)'],
-    ['ORS Sachet', 'Oral Rehydration Salts', 'Hydration', 'Procter & Gamble', 'ORS2026G', '2028-02-14', 12.0, 20.0, 120, 20, 12.0, '8901234567896', 'Oral electrolytes rehydration formula'],
-    ['Vitamin C 500mg', 'Ascorbic Acid', 'Vitamins', 'GlaxoSmithKline', 'VTC2026H', '2027-10-10', 4.0, 8.0, 80, 15, 12.0, '8901234567897', 'Chewable Vitamin C immunity supplement'],
-    ['Dextromethorphan Syrup 100ml', 'Dextromethorphan', 'Cough & Cold', 'Dabur India', 'DEX2025X', '2026-08-01', 40.0, 65.0, 15, 5, 12.0, '8901234567898', 'Cough suppressant syrup (Expired!)'],
-    ['Metformin 500mg', 'Metformin HCl', 'Antidiabetic', 'USV Private Ltd', 'MET2026S', '2026-08-25', 10.0, 18.0, 8, 15, 12.0, '8901234567899', 'First-line medication for type 2 diabetes (Expiring Soon!)'],
-    ['Dolo 650mg', 'Paracetamol 650mg', 'Analgesics', 'Micro Labs', 'DOL2026M', '2027-11-30', 12.0, 20.0, 65, 20, 12.0, '8901234567900', 'High-strength fever & pain relief tablet'],
-    ['Omeprazole 20mg', 'Omeprazole', 'Antacids', 'Cipla Ltd', 'OMP2026N', '2027-09-15', 5.0, 9.5, 45, 15, 12.0, '8901234567901', 'Gastric acid reducer for heartburn'],
-    ['Atorvastatin 10mg', 'Atorvastatin Calcium', 'Cardiovascular', 'Sun Pharma', 'ATV2026O', '2028-03-20', 18.0, 28.0, 35, 10, 12.0, '8901234567902', 'Cholesterol lowering statin medication'],
-    ['Telmisartan 40mg', 'Telmisartan', 'Cardiovascular', 'Glenmark', 'TEL2026P', '2027-07-10', 14.0, 22.0, 50, 15, 12.0, '8901234567903', 'Blood pressure management tablet'],
-    ['Montelukast 10mg', 'Montelukast Sodium', 'Respiratory', 'Mankind Pharma', 'MON2026Q', '2027-10-05', 22.0, 36.0, 30, 10, 12.0, '8901234567904', 'Asthma and allergic rhinitis control tablet'],
-    ['Multivitamin Gold Capsules', 'Multivitamins & Minerals', 'Supplements', 'HealthKart', 'MVG2026R', '2028-06-30', 45.0, 75.0, 85, 20, 18.0, '8901234567905', 'Daily essential multivitamins & zinc capsules'],
-    ['Ciprofloxacin 500mg', 'Ciprofloxacin HCl', 'Antibiotics', 'Ranbaxy Labs', 'CIP2026S', '2027-05-18', 16.0, 26.0, 3, 10, 12.0, '8901234567906', 'Antibiotic tablet for bacterial infections (Low Stock!)'],
-    ['Calcium Carbonate + Vit D3', 'Calcium & Vitamin D3', 'Bone Health', 'Shelcal', 'CAL2026T', '2028-01-15', 30.0, 50.0, 55, 15, 12.0, '8901234567907', 'Calcium & D3 supplement for strong bones'],
-    ['B-Complex Syrup 200ml', 'B-Complex with L-Lysine', 'Supplements', 'Meyer Organics', 'BCP2026U', '2027-12-01', 50.0, 85.0, 20, 8, 12.0, '8901234567908', 'Appetite booster & B-Complex tonic for adults & children'],
-    ['Metoprolol 50mg', 'Metoprolol Succinate', 'Cardiovascular', 'AstraZeneca', 'MET2026V', '2027-08-30', 25.0, 42.0, 28, 10, 12.0, '8901234567909', 'Beta-blocker for hypertension & heart rate']
-  ];
-
-  for (const med of medicines) {
-    insertMed.run(...med);
-  }
-
-  // 3. Pre-seed sample historical sales for realistic analytics
-  seedHistoricalSales();
 }
 
 function seedHistoricalSales() {

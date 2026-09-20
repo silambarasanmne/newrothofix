@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalToken = document.getElementById('modalToken');
   const modalName = document.getElementById('modalName');
   const modalAge = document.getElementById('modalAge');
+  const modalGender = document.getElementById('modalGender');
   const modalMobile = document.getElementById('modalMobile');
   const modalSymptoms = document.getElementById('modalSymptoms');
   const modalDate = document.getElementById('modalDate');
@@ -140,6 +141,17 @@ document.addEventListener('DOMContentLoaded', () => {
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
           ${patient.age} yrs
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm">
+          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-semibold rounded-full ${
+            patient.gender === 'Female' 
+              ? 'bg-rose-950/80 text-rose-300 border border-rose-500/30' 
+              : patient.gender === 'Other'
+              ? 'bg-purple-950/80 text-purple-300 border border-purple-500/30'
+              : 'bg-cyan-950/80 text-cyan-300 border border-cyan-500/30'
+          }">
+            ${patient.gender || 'Male'}
+          </span>
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
           <span class="font-mono text-xs text-cyan-300 bg-slate-800 px-2 py-1 rounded border border-slate-700">
@@ -277,6 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (modalToken) modalToken.textContent = `#${patient.token}`;
       if (modalName) modalName.textContent = patient.patient_name;
       if (modalAge) modalAge.textContent = `${patient.age} Years Old`;
+      if (modalGender) modalGender.textContent = patient.gender || 'Male';
       if (modalMobile) modalMobile.textContent = patient.mobile;
       if (modalSymptoms) modalSymptoms.textContent = patient.symptoms;
       if (modalDate) {
@@ -507,8 +520,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="info-val">OP-${patient.id}</span>
               </div>
               <div class="info-group">
-                <span class="info-label">Age</span>
-                <span class="info-val">${patient.age} Years</span>
+                <span class="info-label">Age / Gender</span>
+                <span class="info-val">${patient.age} Yrs (${patient.gender || 'Male'})</span>
               </div>
               <div class="info-group">
                 <span class="info-label">Mobile Number</span>

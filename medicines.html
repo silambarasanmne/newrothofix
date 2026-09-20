@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ORTHOFIX SPECIALITY CLINIC — Medicine Inventory Management</title>
+  <title>ORTHOFIX SPECIALITY CLINIC — Medicine Inventory & Vendor Management</title>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -63,7 +63,7 @@
         <li class="menu-category admin-only text-[11px] font-extrabold uppercase tracking-widest text-slate-500 px-3 py-2 mt-2">Management</li>
         <li class="admin-only">
           <a href="/medicines.html" class="nav-link active flex items-center gap-3 px-3 py-2.5 bg-gradient-to-r from-sky-600 to-sky-700 text-white rounded-xl font-bold text-sm shadow-md shadow-sky-600/30 transition-all">
-            <span class="nav-icon text-lg w-6 text-center text-white"><svg class="w-5 h-5 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a6.5 6.5 0 00-9.192-9.192l-2.02 2.02a6.5 6.5 0 009.192 9.192l2.02-2.02z M9.213 13.787l5.574-5.574"/></svg></span> <span class="nav-text">Medicine Inventory</span>
+            <span class="nav-icon text-lg w-6 text-center text-white"><svg class="w-5 h-5 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a6.5 6.5 0 00-9.192-9.192l-2.02 2.02a6.5 6.5 0 009.192 9.192l2.02-2.02z M9.213 13.787l5.574-5.574"/></svg></span> <span class="nav-text">Medicine & Vendor Hub</span>
           </a>
         </li>
         <li class="admin-only">
@@ -94,76 +94,326 @@
 
     <!-- Main Wrapper -->
     <div class="main-wrapper flex-grow flex flex-col h-screen overflow-hidden bg-slate-50">
-      <header class="top-header h-16 bg-white border-b border-slate-200/80 px-6 flex items-center justify-between flex-shrink-0 shadow-sm">
+      <header class="top-header bg-white border-b border-slate-200/80 px-6 py-3 flex flex-wrap items-center justify-between gap-4 flex-shrink-0 shadow-sm">
         <div class="header-title-wrapper flex items-center gap-3">
-          <button class="btn-toggle-sidebar w-9 h-9 bg-slate-100 hover:bg-sky-50 text-slate-700 hover:text-sky-600 border border-slate-200 rounded-xl flex items-center justify-center cursor-pointer transition-colors" title="Toggle Sidebar Pin / Hover Mode">
+          <button class="btn-toggle-sidebar w-9 h-9 bg-slate-100 hover:bg-sky-50 text-slate-700 hover:text-sky-600 border border-slate-200 rounded-xl flex items-center justify-center cursor-pointer transition-colors" title="Toggle Sidebar Pin">
             <svg class="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
           </button>
           <div class="header-title">
-            <h2 class="text-base font-extrabold text-slate-900 tracking-tight flex items-center"><svg class="w-5 h-5 text-indigo-600 mr-2 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a6.5 6.5 0 00-9.192-9.192l-2.02 2.02a6.5 6.5 0 009.192 9.192l2.02-2.02z M9.213 13.787l5.574-5.574"/></svg>Medicine & Inventory Management</h2>
-            <p class="text-xs text-slate-500 font-medium">Manage medicine database, stock adjustments, batch info, and Excel import/export</p>
+            <h2 class="text-base font-extrabold text-slate-900 tracking-tight flex items-center">
+              <svg class="w-5 h-5 text-indigo-600 mr-2 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a6.5 6.5 0 00-9.192-9.192l-2.02 2.02a6.5 6.5 0 009.192 9.192l2.02-2.02z M9.213 13.787l5.574-5.574"/></svg>
+              Medicine & Vendor Inventory Management
+            </h2>
+            <p class="text-xs text-slate-500 font-medium">Manage stock register, vendor purchases, purchase returns, and expired medicine disposals</p>
           </div>
         </div>
-        <div class="header-actions flex items-center gap-3">
-          <button class="btn btn-secondary px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold shadow-sm flex items-center gap-2 transition-colors cursor-pointer" onclick="Medicines.openImportModal()">
-            <svg class="w-4 h-4 text-sky-600 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg> Import Excel
+
+        <div class="header-actions flex flex-wrap items-center gap-2">
+          <button class="btn px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer" onclick="Medicines.clearAllInventoryData()" title="Wipe all inventory tables">
+            <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            Clear All Data
           </button>
-          <button class="btn btn-primary px-4 py-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white rounded-xl text-xs font-bold shadow-md shadow-sky-600/25 flex items-center gap-2 transition-all cursor-pointer" onclick="Medicines.openAddModal()">
-            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add Medicine
+          <button class="btn px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer" onclick="Medicines.openVendorManageModal()">
+            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            Vendors Directory
+          </button>
+          <button class="btn px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer" onclick="Medicines.openVendorPurchaseModal()">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+            + Vendor Purchase
+          </button>
+          <button class="btn px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer" onclick="Medicines.openPurchaseReturnModal()">
+            <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+            + Purchase Return
+          </button>
+          <button class="btn px-3 py-2 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer" onclick="Medicines.openImportModal()">
+            <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+            Import Excel
+          </button>
+          <button class="btn px-4 py-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white rounded-xl text-xs font-bold shadow-md shadow-sky-600/25 flex items-center gap-1.5 transition-all cursor-pointer" onclick="Medicines.openAddModal()">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Add Medicine
           </button>
         </div>
       </header>
 
+      <!-- Sub Navigation Tabs Bar -->
+      <div class="sub-nav-bar bg-white border-b border-slate-200/80 px-6 py-2 flex items-center gap-2 overflow-x-auto flex-shrink-0">
+        <button id="med-tab-register" class="sub-tab-btn active px-4 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm flex items-center gap-2 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          Medicine Stock Register
+        </button>
+        <button id="med-tab-purchases" class="sub-tab-btn px-4 py-2 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition-all">
+          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          Vendor Purchase Orders
+        </button>
+        <button id="med-tab-returns" class="sub-tab-btn px-4 py-2 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition-all">
+          <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+          Purchase Returns to Vendors
+        </button>
+        <button id="med-tab-expired" class="sub-tab-btn px-4 py-2 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition-all">
+          <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          Expired Medicine & Disposals
+        </button>
+      </div>
+
       <main class="content-body flex-grow p-6 overflow-y-auto">
-        <div class="table-card bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
-          <div class="table-header-bar p-5 border-b border-slate-200/80 flex flex-wrap justify-between items-center gap-4 bg-slate-50/50">
-            <div class="table-header-title">
-              <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                <svg class="w-5 h-5 text-sky-600 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg> Pharmacy Stock Register
-              </h3>
-            </div>
-            <div class="table-controls flex flex-wrap items-center gap-3">
-              <div class="relative">
-                <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input type="text" id="med-search-input" class="select-filter pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-600/10 w-64" placeholder="Search medicine, generic, barcode...">
+
+        <!-- SECTION 1: MEDICINE STOCK REGISTER -->
+        <div id="med-section-register" class="tab-section">
+          <div class="table-card bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
+            <div class="table-header-bar p-5 border-b border-slate-200/80 flex flex-wrap justify-between items-center gap-4 bg-slate-50/50">
+              <div class="table-header-title">
+                <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                  <svg class="w-5 h-5 text-sky-600 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg> Pharmacy Stock Register
+                </h3>
               </div>
-              <select id="med-filter-category" class="select-filter px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none cursor-pointer">
-                <option value="All">All Categories</option>
-              </select>
-              <select id="med-filter-status" class="select-filter px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none cursor-pointer">
-                <option value="">All Statuses</option>
-                <option value="in_stock">In Stock</option>
-                <option value="low_stock">Low Stock</option>
-                <option value="out_of_stock">Out of Stock</option>
-                <option value="expiring_30">Expiring in 30 Days</option>
-                <option value="expiring_90">Expiring in 90 Days</option>
-                <option value="expired">Expired</option>
-              </select>
+              <div class="table-controls flex flex-wrap items-center gap-3">
+                <div class="relative">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input type="text" id="med-search-input" class="select-filter pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-600/10 w-64" placeholder="Search medicine, generic, barcode...">
+                </div>
+                <select id="med-filter-category" class="select-filter px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none cursor-pointer">
+                  <option value="All">All Categories</option>
+                </select>
+                <select id="med-filter-status" class="select-filter px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none cursor-pointer">
+                  <option value="">All Statuses</option>
+                  <option value="in_stock">In Stock</option>
+                  <option value="low_stock">Low Stock</option>
+                  <option value="out_of_stock">Out of Stock</option>
+                  <option value="expiring_30">Expiring in 30 Days</option>
+                  <option value="expiring_90">Expiring in 90 Days</option>
+                  <option value="expired">Expired</option>
+                </select>
+                <button class="btn px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition-all cursor-pointer" onclick="Medicines.openImportModal()">
+                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                  📊 Excel Upload Stock
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="data-table w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="bg-slate-100/70 border-b border-slate-200 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                    <th class="p-3.5">ID</th>
+                    <th class="p-3.5">Medicine Name & Generic</th>
+                    <th class="p-3.5">Linked Vendor Firm</th>
+                    <th class="p-3.5">Category</th>
+                    <th class="p-3.5">Batch #</th>
+                    <th class="p-3.5">Expiry</th>
+                    <th class="p-3.5 text-right">Purchase Price</th>
+                    <th class="p-3.5 text-right">Selling Price</th>
+                    <th class="p-3.5 text-center">Current Stock</th>
+                    <th class="p-3.5 text-center">Status</th>
+                    <th class="p-3.5 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="medicines-table-body" class="divide-y divide-slate-200 text-slate-700 font-medium">
+                  <!-- Loaded dynamically via Medicines.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: VENDOR PURCHASES MANAGEMENT -->
+        <div id="med-section-purchases" class="tab-section hidden space-y-4">
+          <div class="table-card bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
+            <div class="table-header-bar p-5 border-b border-slate-200/80 flex flex-wrap justify-between items-center gap-4 bg-slate-50/50">
+              <div>
+                <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                  <svg class="w-5 h-5 text-emerald-600 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                  Vendor Purchase Orders History
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">Records of inward medicine stock purchased from vendors</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="btn px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer" onclick="Medicines.printPurchasesSummary()">
+                  <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                  Print PO Report
+                </button>
+                <button class="btn px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer" onclick="Medicines.openVendorManageModal()">
+                  <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                  + Register Vendor Details
+                </button>
+                <button class="btn px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/25 flex items-center gap-1.5 transition-all cursor-pointer" onclick="Medicines.openVendorPurchaseModal()">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  New Purchase Order
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="data-table w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="bg-slate-100/70 border-b border-slate-200 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                    <th class="p-3.5">PO #</th>
+                    <th class="p-3.5">Vendor Name</th>
+                    <th class="p-3.5">Bill / Invoice #</th>
+                    <th class="p-3.5">Purchase Date</th>
+                    <th class="p-3.5 text-right">Total Amount (₹)</th>
+                    <th class="p-3.5 text-center">Status</th>
+                    <th class="p-3.5 text-center">Purchased Items</th>
+                    <th class="p-3.5">Recorded By</th>
+                    <th class="p-3.5 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="purchases-table-body" class="divide-y divide-slate-200 text-slate-700 font-medium">
+                  <tr><td colspan="9" class="p-6 text-center text-slate-500">Loading purchase orders...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: PURCHASE RETURNS -->
+        <div id="med-section-returns" class="tab-section hidden space-y-4">
+          <div class="table-card bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
+            <div class="table-header-bar p-5 border-b border-slate-200/80 flex flex-wrap justify-between items-center gap-4 bg-slate-50/50">
+              <div>
+                <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                  <svg class="w-5 h-5 text-amber-600 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+                  Purchase Returns to Vendors Log
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">Records of stock returned back to suppliers with refund tracking</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="btn px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer" onclick="Medicines.printReturnsSummary()">
+                  <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                  Print Returns Log
+                </button>
+                <button class="btn px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-md shadow-amber-600/25 flex items-center gap-1.5 transition-all cursor-pointer" onclick="Medicines.openPurchaseReturnModal()">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  New Purchase Return
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="data-table w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="bg-slate-100/70 border-b border-slate-200 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                    <th class="p-3.5">Return PR #</th>
+                    <th class="p-3.5">Vendor Name</th>
+                    <th class="p-3.5">Ref PO #</th>
+                    <th class="p-3.5">Return Date</th>
+                    <th class="p-3.5">Reason</th>
+                    <th class="p-3.5 text-right">Refund Total (₹)</th>
+                    <th class="p-3.5 text-center">Returned Items</th>
+                    <th class="p-3.5">Recorded By</th>
+                    <th class="p-3.5 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="returns-table-body" class="divide-y divide-slate-200 text-slate-700 font-medium">
+                  <tr><td colspan="9" class="p-6 text-center text-slate-500">Loading purchase returns...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: EXPIRED MEDICINES & DISPOSAL DETAILS -->
+        <div id="med-section-expired" class="tab-section hidden space-y-5">
+          
+          <!-- Metrics Cards for Expired Stock -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white border border-rose-200 p-4 rounded-2xl shadow-sm flex items-center justify-between">
+              <div>
+                <p class="text-[11px] font-extrabold uppercase text-rose-500 tracking-wider">Expired Medicines</p>
+                <h3 id="stat-expired-count" class="text-2xl font-black text-rose-700 mt-1">0</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Batches requiring action</p>
+              </div>
+              <div class="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-xl">⚠️</div>
+            </div>
+
+            <div class="bg-white border border-amber-200 p-4 rounded-2xl shadow-sm flex items-center justify-between">
+              <div>
+                <p class="text-[11px] font-extrabold uppercase text-amber-600 tracking-wider">Expired Stock Units</p>
+                <h3 id="stat-expired-units" class="text-2xl font-black text-amber-800 mt-1">0</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Physical units in stock</p>
+              </div>
+              <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xl">📦</div>
+            </div>
+
+            <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex items-center justify-between">
+              <div>
+                <p class="text-[11px] font-extrabold uppercase text-slate-500 tracking-wider">Total Purchase Value Lost</p>
+                <h3 id="stat-expired-value" class="text-2xl font-black text-slate-900 mt-1">₹0.00</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Calculated at purchase price</p>
+              </div>
+              <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xl">💸</div>
             </div>
           </div>
 
-          <div class="overflow-x-auto">
-            <table class="data-table w-full text-left text-xs border-collapse">
-              <thead>
-                <tr class="bg-slate-100/70 border-b border-slate-200 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
-                  <th class="p-3.5">ID</th>
-                  <th class="p-3.5">Medicine Name & Generic</th>
-                  <th class="p-3.5">Category</th>
-                  <th class="p-3.5">Batch #</th>
-                  <th class="p-3.5">Expiry</th>
-                  <th class="p-3.5 text-right">Purchase Price</th>
-                  <th class="p-3.5 text-right">Selling Price</th>
-                  <th class="p-3.5 text-center">Current Stock</th>
-                  <th class="p-3.5 text-center">Status</th>
-                  <th class="p-3.5 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="medicines-table-body" class="divide-y divide-slate-200 text-slate-700 font-medium">
-                <!-- Loaded dynamically via Medicines.js -->
-              </tbody>
-            </table>
+          <!-- Expired Stock Table -->
+          <div class="table-card bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
+            <div class="table-header-bar p-5 border-b border-slate-200/80 flex flex-wrap justify-between items-center gap-4 bg-slate-50/50">
+              <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                <svg class="w-5 h-5 text-rose-600 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                Expired Medicine Stock Inventory
+              </h3>
+              <button class="btn px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer" onclick="Medicines.printExpiredReport()">
+                <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                Print Expired Stock Report
+              </button>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="data-table w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="bg-slate-100/70 border-b border-slate-200 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                    <th class="p-3.5">ID</th>
+                    <th class="p-3.5">Medicine Name & Generic</th>
+                    <th class="p-3.5">Supplier / Vendor Firm</th>
+                    <th class="p-3.5">Manufacturer</th>
+                    <th class="p-3.5">Batch #</th>
+                    <th class="p-3.5">Expiry Date</th>
+                    <th class="p-3.5 text-center">Stock Units</th>
+                    <th class="p-3.5 text-right">Purchase Price</th>
+                    <th class="p-3.5 text-right">Total Loss (₹)</th>
+                    <th class="p-3.5 text-center">Action Options</th>
+                  </tr>
+                </thead>
+                <tbody id="expired-table-body" class="divide-y divide-slate-200 text-slate-700 font-medium">
+                  <tr><td colspan="9" class="p-6 text-center text-slate-500">Loading expired medicines...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
+
+          <!-- Expired Disposals Log Table -->
+          <div class="table-card bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
+            <div class="table-header-bar p-5 border-b border-slate-200/80 flex justify-between items-center bg-slate-50/50">
+              <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                <svg class="w-5 h-5 text-slate-700 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                Disposed & Written-off Medicines History
+              </h3>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="data-table w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="bg-slate-100/70 border-b border-slate-200 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                    <th class="p-3.5">Disposal DISP #</th>
+                    <th class="p-3.5">Medicine Name</th>
+                    <th class="p-3.5">Batch #</th>
+                    <th class="p-3.5">Expiry</th>
+                    <th class="p-3.5 text-center">Qty Disposed</th>
+                    <th class="p-3.5 text-right">Loss Amount (₹)</th>
+                    <th class="p-3.5">Disposal Reason</th>
+                    <th class="p-3.5">User</th>
+                    <th class="p-3.5">Date</th>
+                  </tr>
+                </thead>
+                <tbody id="disposals-table-body" class="divide-y divide-slate-200 text-slate-700 font-medium">
+                  <tr><td colspan="9" class="p-6 text-center text-slate-500">Loading disposals log...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
+
       </main>
 
       <!-- APP FOOTER -->
@@ -220,6 +470,12 @@
               <input type="text" id="med-category" required placeholder="e.g. Analgesics, Antibiotics" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:bg-white focus:border-sky-600 focus:ring-2 focus:ring-sky-600/10">
             </div>
             <div class="form-group flex flex-col gap-1">
+              <label for="med-vendor-select" class="text-xs font-bold text-slate-700 uppercase tracking-wider">Linked Vendor / Supplier</label>
+              <select id="med-vendor-select" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 outline-none focus:bg-white focus:border-sky-600 focus:ring-2 focus:ring-sky-600/10">
+                <option value="">-- Choose Vendor / Supplier --</option>
+              </select>
+            </div>
+            <div class="form-group flex flex-col gap-1">
               <label for="med-manufacturer" class="text-xs font-bold text-slate-700 uppercase tracking-wider">Manufacturer</label>
               <input type="text" id="med-manufacturer" placeholder="e.g. Cipla Ltd" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:bg-white focus:border-sky-600 focus:ring-2 focus:ring-sky-600/10">
             </div>
@@ -264,6 +520,237 @@
         <div class="modal-footer p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
           <button type="button" class="btn btn-secondary px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl font-bold text-xs transition-colors" onclick="UI.closeModal('modal-medicine')">Cancel</button>
           <button type="submit" class="btn btn-primary px-4 py-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white rounded-xl font-bold text-xs shadow-md shadow-sky-600/25 transition-all">Save Medicine</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- VENDOR PURCHASE ORDER MODAL -->
+  <div class="modal-overlay fixed inset-0 bg-slate-900/65 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 invisible transition-all duration-200" id="modal-vendor-purchase">
+    <div class="modal-box modal-lg bg-white rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden">
+      <div class="modal-header p-5 border-b border-slate-200 flex justify-between items-center">
+        <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+          <svg class="w-5 h-5 text-emerald-600 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          Record New Vendor Purchase Order (Inward Stock)
+        </h3>
+        <button class="btn-close-modal text-slate-400 hover:text-slate-700 text-lg p-1 rounded-lg" onclick="UI.closeModal('modal-vendor-purchase')">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="form-vendor-purchase" class="flex flex-col flex-grow">
+        <div class="modal-body p-6 overflow-y-auto space-y-4">
+          
+          <!-- Image Upload & Auto OCR Parse Box -->
+          <div class="bg-gradient-to-r from-emerald-50 to-sky-50 border border-emerald-200 p-4 rounded-2xl space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-extrabold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Upload Vendor Bill / PO Image (Auto-Parses Fields)
+              </label>
+              <span id="vp-image-status" class="text-[11px] font-bold text-emerald-700 hidden">✓ Image Parsed & Fields Updated!</span>
+            </div>
+            <p class="text-[11px] text-slate-500">Choosing an invoice image photo automatically extracts vendor details, bill #, date, and pre-fills all fields below.</p>
+            <div class="flex items-center gap-3">
+              <input type="file" id="vp-invoice-image-file" accept="image/*" class="p-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-700 cursor-pointer flex-grow">
+              <button type="button" class="btn px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-sm flex items-center gap-1 shrink-0 cursor-pointer" onclick="Medicines.parseUploadedInvoiceImage()">
+                ⚡ Re-Parse Image
+              </button>
+            </div>
+            <div id="vp-image-preview-container" class="hidden mt-2">
+              <img id="vp-image-preview" src="" alt="Vendor Invoice Preview" class="h-20 rounded-lg border border-slate-300 object-cover shadow-sm">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Select Vendor *</label>
+              <select id="vp-vendor-select" required class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 outline-none focus:border-sky-600">
+                <option value="">-- Choose Supplier / Vendor --</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Vendor Firm Name</label>
+              <input type="text" id="vp-vendor-name" placeholder="Vendor / Supplier Name" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-sky-600">
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Vendor Invoice / Bill #</label>
+              <input type="text" id="vp-invoice-num" placeholder="e.g. INV-CIP-9988" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-sky-600">
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Purchase Date *</label>
+              <input type="date" id="vp-date" required class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-sky-600">
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Payment Status</label>
+              <select id="vp-payment-status" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 outline-none focus:border-sky-600">
+                <option value="Paid">Paid</option>
+                <option value="Pending">Pending / Credit</option>
+                <option value="Partial">Partial</option>
+              </select>
+            </div>
+          </div>
+
+
+        </div>
+        <div class="modal-footer p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+          <button type="button" class="btn px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl font-bold text-xs" onclick="UI.closeModal('modal-vendor-purchase')">Cancel</button>
+          <button type="submit" class="btn px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-md shadow-emerald-600/25">Submit Vendor Purchase Order</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PURCHASE RETURN MODAL -->
+  <div class="modal-overlay fixed inset-0 bg-slate-900/65 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 invisible transition-all duration-200" id="modal-purchase-return">
+    <div class="modal-box modal-lg bg-white rounded-3xl shadow-2xl w-full max-w-xl flex flex-col overflow-hidden">
+      <div class="modal-header p-5 border-b border-slate-200 flex justify-between items-center">
+        <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+          <svg class="w-5 h-5 text-amber-600 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+          Record Purchase Return to Vendor
+        </h3>
+        <button class="btn-close-modal text-slate-400 hover:text-slate-700 text-lg p-1 rounded-lg" onclick="UI.closeModal('modal-purchase-return')">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="form-purchase-return" class="flex flex-col flex-grow">
+        <div class="modal-body p-6 overflow-y-auto space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Select Vendor *</label>
+              <select id="pr-vendor-select" required class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 outline-none focus:border-sky-600">
+                <option value="">-- Choose Vendor --</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Ref Purchase PO #</label>
+              <input type="text" id="pr-po-num" placeholder="e.g. PO-20260920-1234" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-sky-600">
+            </div>
+
+            <div class="flex flex-col gap-1 md:col-span-2">
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Return Reason *</label>
+              <select id="pr-reason" required class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 outline-none focus:border-sky-600">
+                <option value="Expired Stock Return">Expired Stock Return</option>
+                <option value="Damaged Shipment">Damaged Shipment</option>
+                <option value="Wrong Item Received">Wrong Item Received</option>
+                <option value="Excess Order Return">Excess Order Return</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col gap-1 md:col-span-2">
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Select Medicine to Return *</label>
+              <select id="pr-med-select" required class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 outline-none focus:border-sky-600">
+                <option value="">-- Choose Medicine --</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Quantity to Return *</label>
+              <input type="number" id="pr-quantity" min="1" required placeholder="e.g. 10" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-sky-600">
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Unit Refund Rate (₹) *</label>
+              <input type="number" id="pr-price" min="0" step="any" required placeholder="0.00" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-sky-600">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+          <button type="button" class="btn px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl font-bold text-xs" onclick="UI.closeModal('modal-purchase-return')">Cancel</button>
+          <button type="submit" class="btn px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-xs shadow-md shadow-amber-600/25">Submit Purchase Return</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- VENDOR MANAGEMENT MODAL -->
+  <div class="modal-overlay fixed inset-0 bg-slate-900/65 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 invisible transition-all duration-200" id="modal-vendor-manage">
+    <div class="modal-box modal-lg bg-white rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden">
+      <div class="modal-header p-5 border-b border-slate-200 flex justify-between items-center">
+        <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+          <svg class="w-5 h-5 text-purple-600 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          Vendor / Supplier Directory
+        </h3>
+        <button class="btn-close-modal text-slate-400 hover:text-slate-700 text-lg p-1 rounded-lg" onclick="UI.closeModal('modal-vendor-manage')">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body p-6 overflow-y-auto space-y-4">
+        <!-- Add Vendor Form -->
+        <form id="form-add-vendor" class="bg-purple-50 border border-purple-100 p-4 rounded-2xl space-y-3">
+          <h4 class="text-xs font-extrabold text-purple-900 uppercase tracking-wider">+ Register New Supplier / Vendor</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <input type="text" id="v-name" required placeholder="Vendor Firm Name *" class="p-2 bg-white border border-purple-200 rounded-xl text-xs font-semibold text-slate-900 outline-none">
+            <input type="text" id="v-contact" placeholder="Contact Person" class="p-2 bg-white border border-purple-200 rounded-xl text-xs font-semibold text-slate-900 outline-none">
+            <input type="text" id="v-phone" placeholder="Phone Number" class="p-2 bg-white border border-purple-200 rounded-xl text-xs font-semibold text-slate-900 outline-none">
+            <input type="email" id="v-email" placeholder="Email Address" class="p-2 bg-white border border-purple-200 rounded-xl text-xs font-semibold text-slate-900 outline-none">
+            <input type="text" id="v-gst" placeholder="GST Number" class="p-2 bg-white border border-purple-200 rounded-xl text-xs font-semibold text-slate-900 outline-none md:col-span-2">
+          </div>
+          <button type="submit" class="btn px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs">Save Vendor</button>
+        </form>
+
+        <h4 class="text-xs font-extrabold text-slate-800 uppercase tracking-wider mt-4">Existing Vendors List</h4>
+        <div class="max-h-52 overflow-y-auto border border-slate-200 rounded-xl">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-100 border-b border-slate-200 font-extrabold text-slate-500 uppercase">
+              <tr>
+                <th class="p-2">Vendor Name</th>
+                <th class="p-2">Contact Person</th>
+                <th class="p-2">Phone</th>
+                <th class="p-2">GST #</th>
+              </tr>
+            </thead>
+            <tbody id="vendor-directory-body" class="divide-y divide-slate-200">
+              <tr><td colspan="4" class="p-3 text-center text-slate-500">Loading vendors...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer p-4 border-t border-slate-200 bg-slate-50 flex justify-end">
+        <button class="btn px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl font-bold text-xs" onclick="UI.closeModal('modal-vendor-manage')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPIRED DISPOSAL MODAL -->
+  <div class="modal-overlay fixed inset-0 bg-slate-900/65 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 invisible transition-all duration-200" id="modal-dispose-expired">
+    <div class="modal-box bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden">
+      <div class="modal-header p-5 border-b border-slate-200 flex justify-between items-center">
+        <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+          <svg class="w-5 h-5 text-rose-600 inline-block align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          Dispose Expired Medicine Stock
+        </h3>
+        <button class="btn-close-modal text-slate-400 hover:text-slate-700 text-lg p-1 rounded-lg" onclick="UI.closeModal('modal-dispose-expired')">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="form-dispose-expired" class="flex flex-col flex-grow">
+        <div class="modal-body p-6 space-y-4">
+          <input type="hidden" id="dispose-med-id">
+          <div class="bg-rose-50 border border-rose-100 p-4 rounded-xl">
+            <p class="text-xs text-slate-600 font-medium">Medicine: <strong id="dispose-med-name" class="text-rose-700 font-extrabold">-</strong></p>
+            <p class="text-xs text-slate-600 font-medium mt-1">Batch #: <strong id="dispose-med-batch" class="text-slate-900 font-bold">-</strong> | Expired On: <strong id="dispose-med-expiry" class="text-rose-600 font-bold">-</strong></p>
+            <p class="text-xs text-slate-600 font-medium mt-1">Current Stock to Write-off: <strong id="dispose-med-stock" class="text-slate-900 font-bold">0</strong> units</p>
+          </div>
+
+          <div class="form-group flex flex-col gap-1">
+            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Disposal Quantity *</label>
+            <input type="number" id="dispose-qty" min="1" required placeholder="e.g. 15" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-rose-600">
+          </div>
+
+          <div class="form-group flex flex-col gap-1">
+            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Disposal / Write-off Reason *</label>
+            <input type="text" id="dispose-reason" required value="Expired Stock Destruction & Write-off" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-rose-600">
+          </div>
+        </div>
+        <div class="modal-footer p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+          <button type="button" class="btn px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl font-bold text-xs" onclick="UI.closeModal('modal-dispose-expired')">Cancel</button>
+          <button type="submit" class="btn px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs shadow-md shadow-rose-600/25">Confirm Disposal & Write-off</button>
         </div>
       </form>
     </div>
@@ -328,9 +815,18 @@
           </button>
         </div>
 
-        <div class="form-group flex flex-col gap-1.5">
-          <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Step 2: Select or Drag & Drop Excel File</label>
-          <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="p-3 border-2 border-dashed border-sky-400/60 bg-slate-50 hover:bg-sky-50/50 rounded-2xl text-xs font-semibold text-slate-700 cursor-pointer transition-colors">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="form-group flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Step 2: Assign Default Vendor Firm (Optional)</label>
+            <select id="import-vendor-select" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 outline-none focus:border-sky-600">
+              <option value="">-- Use Vendor Specified in Excel Rows --</option>
+            </select>
+          </div>
+
+          <div class="form-group flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Step 3: Select or Drag & Drop Excel File</label>
+            <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 cursor-pointer transition-colors">
+          </div>
         </div>
 
         <!-- Import Preview Section -->
@@ -345,6 +841,7 @@
                 <tr class="bg-slate-100 border-b border-slate-200 text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
                   <th class="p-2">Row</th>
                   <th class="p-2">Medicine</th>
+                  <th class="p-2">Vendor / Supplier Firm</th>
                   <th class="p-2">Generic</th>
                   <th class="p-2">Category</th>
                   <th class="p-2">Batch</th>

@@ -96,22 +96,33 @@ const Billing = {
       statusSelect.addEventListener('change', () => this.loadMedicines());
     }
 
-    // Discount Type & Value Inputs
+    // Discount Type & Value Inputs (Modal & Cart Inline)
     const discountTypeSelect = document.getElementById('discount-type');
     const discountValInput = document.getElementById('discount-value');
+    const cartDiscountType = document.getElementById('cart-discount-type');
+    const cartDiscountVal = document.getElementById('cart-discount-value');
+
+    const updateDiscount = (type, val) => {
+      this.discountType = type;
+      this.discountValue = parseFloat(val) || 0;
+      if (discountTypeSelect && discountTypeSelect.value !== type) discountTypeSelect.value = type;
+      if (cartDiscountType && cartDiscountType.value !== type) cartDiscountType.value = type;
+      if (discountValInput && parseFloat(discountValInput.value) !== this.discountValue) discountValInput.value = this.discountValue || '';
+      if (cartDiscountVal && parseFloat(cartDiscountVal.value) !== this.discountValue) cartDiscountVal.value = this.discountValue || '';
+      this.calculateTotals();
+    };
 
     if (discountTypeSelect) {
-      discountTypeSelect.addEventListener('change', (e) => {
-        this.discountType = e.target.value;
-        this.calculateTotals();
-      });
+      discountTypeSelect.addEventListener('change', (e) => updateDiscount(e.target.value, discountValInput?.value));
     }
-
     if (discountValInput) {
-      discountValInput.addEventListener('input', (e) => {
-        this.discountValue = parseFloat(e.target.value) || 0;
-        this.calculateTotals();
-      });
+      discountValInput.addEventListener('input', (e) => updateDiscount(discountTypeSelect?.value || 'fixed', e.target.value));
+    }
+    if (cartDiscountType) {
+      cartDiscountType.addEventListener('change', (e) => updateDiscount(e.target.value, cartDiscountVal?.value));
+    }
+    if (cartDiscountVal) {
+      cartDiscountVal.addEventListener('input', (e) => updateDiscount(cartDiscountType?.value || 'percent', e.target.value));
     }
 
     // Payment Method Buttons
@@ -422,6 +433,8 @@ const Billing = {
     this.discountValue = 0;
     const discInput = document.getElementById('discount-value');
     if (discInput) discInput.value = '';
+    const cartDiscInput = document.getElementById('cart-discount-value');
+    if (cartDiscInput) cartDiscInput.value = '';
     this.renderCart();
   },
 

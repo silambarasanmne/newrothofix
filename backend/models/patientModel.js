@@ -4,7 +4,7 @@ class PatientModel {
   /**
    * Create a new patient with auto-incrementing sequential token starting from 1
    */
-  static create({ patient_name, age, mobile, symptoms }) {
+  static create({ patient_name, age, gender = 'Male', mobile, symptoms }) {
     db.exec('BEGIN TRANSACTION');
     try {
       // Get max token for TODAY so token resets every day starting from 1
@@ -16,11 +16,11 @@ class PatientModel {
       const nextToken = (maxTokenRow ? maxTokenRow.maxToken : 0) + 1;
 
       const stmt = db.prepare(`
-        INSERT INTO patients (token, patient_name, age, mobile, symptoms)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO patients (token, patient_name, age, gender, mobile, symptoms)
+        VALUES (?, ?, ?, ?, ?, ?)
       `);
 
-      const result = stmt.run(nextToken, patient_name, Number(age), mobile.trim(), symptoms.trim());
+      const result = stmt.run(nextToken, patient_name, Number(age), gender || 'Male', mobile.trim(), symptoms.trim());
 
       const createdPatient = db.prepare('SELECT * FROM patients WHERE id = ?').get(result.lastInsertRowid);
       db.exec('COMMIT');
@@ -198,7 +198,7 @@ class PatientModel {
     }
 
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
-    const sql = `SELECT id, token, patient_name, age, mobile, symptoms, created_at FROM patients ${whereClause} ORDER BY token ASC`;
+    const sql = `SELECT id, token, patient_name, age, gender, mobile, symptoms, created_at FROM patients ${whereClause} ORDER BY token ASC`;
 
     return db.prepare(sql).all(...params);
   }
@@ -230,13 +230,13 @@ class PatientModel {
   /**
    * Update existing patient details
    */
-  static update(id, { patient_name, age, mobile, symptoms }) {
+  static update(id, { patient_name, age, gender = 'Male', mobile, symptoms }) {
     const stmt = db.prepare(`
       UPDATE patients 
-      SET patient_name = ?, age = ?, mobile = ?, symptoms = ?
+      SET patient_name = ?, age = ?, gender = ?, mobile = ?, symptoms = ?
       WHERE id = ?
     `);
-    const result = stmt.run(patient_name.trim(), Number(age), mobile.trim(), symptoms.trim(), parseInt(id));
+    const result = stmt.run(patient_name.trim(), Number(age), gender || 'Male', mobile.trim(), symptoms.trim(), parseInt(id));
     return result.changes > 0;
   }
 
