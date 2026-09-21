@@ -93,40 +93,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Primary Search Logic ---
     async function performPrimarySearch() {
-        const val = primarySearchInput ? primarySearchInput.value.trim() : '';
-        if (!val) {
-            Toast.error("Please enter a Token # or Mobile Number");
+        const rawVal = primarySearchInput ? primarySearchInput.value.trim() : '';
+        if (!rawVal) {
+            Toast.error("Please enter a Token #, Mobile Number, or Patient Name");
             return;
         }
+
+        // Clean input: remove leading # or "token" text if present
+        const cleanVal = rawVal.replace(/^#/, '').replace(/^token\s*#?/i, '').trim();
 
         if (consultationLoadingOverlay) consultationLoadingOverlay.classList.remove('hidden');
 
         try {
-            // First try to fetch by token
-            let res = await PatientAPI.getPatientByToken(val);
+            let patientData = null;
 
-            if (!res.success) {
-                // Fallback to search query if token fetch failed (e.g. searching by mobile or name)
-                const searchRes = await PatientAPI.getPatients({ search: val, limit: 1 });
-                if (searchRes.success && searchRes.data.length > 0) {
-                    res = { success: true, data: searchRes.data[0] };
+            // 1. If it's a numeric token (e.g. "1", "12"), try token lookup first
+            if (/^\d+$/.test(cleanVal)) {
+                try {
+                    const tokenRes = await PatientAPI.getPatientByToken(cleanVal);
+                    if (tokenRes && tokenRes.success && tokenRes.data) {
+                        patientData = tokenRes.data;
+                    }
+                } catch (e) {
+                    // Token API returned 404 or error, fall through to general search
                 }
             }
 
-            if (res.success && res.data) {
-                activeConsultPatient = res.data;
-                if (consultPatientName) consultPatientName.value = res.data.patient_name || '';
-                if (consultPatientAge) consultPatientAge.value = res.data.age ? `${res.data.age} Years` : '';
-                if (consultPatientMobile) consultPatientMobile.value = res.data.mobile || '';
-                if (consultPatientToken) consultPatientToken.value = `#${res.data.token}`;
+            // 2. If token lookup didn't find patient or search term is mobile/name/alphanumeric, perform general patient search
+            if (!patientData) {
+                try {
+                    const searchRes = await PatientAPI.getPatients({ search: cleanVal, limit: 1 });
+                    if (searchRes && searchRes.success && Array.isArray(searchRes.data) && searchRes.data.length > 0) {
+                        patientData = searchRes.data[0];
+                    }
+                } catch (e) {
+                    // General search failed
+                }
+            }
+
+            if (patientData) {
+                activeConsultPatient = patientData;
+                if (consultPatientName) consultPatientName.value = patientData.patient_name || '';
+                if (consultPatientAge) consultPatientAge.value = patientData.age ? `${patientData.age} Years` : '';
+                if (consultPatientMobile) consultPatientMobile.value = patientData.mobile || '';
+                if (consultPatientToken) consultPatientToken.value = `#${patientData.token}`;
                 if (consultPatientDate) {
-                    const regDate = res.data.created_at ? new Date(res.data.created_at).toLocaleDateString('en-IN', {
+                    const regDate = patientData.created_at ? new Date(patientData.created_at).toLocaleDateString('en-IN', {
                         day: '2-digit', month: 'short', year: 'numeric'
                     }) : '';
                     consultPatientDate.value = regDate;
                 }
-                if (consultPatientIssues) consultPatientIssues.value = res.data.symptoms || 'No issues reported.';
-                if (consultDoctorComment) consultDoctorComment.value = res.data.doctor_comment || '';
+                if (consultPatientIssues) consultPatientIssues.value = patientData.symptoms || 'No issues reported.';
+                if (consultDoctorComment) consultDoctorComment.value = patientData.doctor_comment || '';
 
                 // Clear existing prescription rows
                 if (prescriptionTableBody) {
@@ -135,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Check if there is an existing pending prescription for this patient token
                 try {
-                    const prescRes = await apiRequest(`/prescriptions/patient/${res.data.token}`);
+                    const prescRes = await apiRequest(`/prescriptions/patient/${patientData.token}`);
                     if (prescRes && prescRes.success && prescRes.prescription) {
                         if (consultDoctorComment && prescRes.prescription.doctor_comment) {
                             consultDoctorComment.value = prescRes.prescription.doctor_comment;
@@ -154,13 +172,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     addPrescriptionRow();
                 }
 
-                Toast.success('Patient record loaded into Patient Information panel');
+                Toast.success(`Patient #${patientData.token} (${patientData.patient_name}) loaded`);
 
                 if (consultationFormContainer) {
                     consultationFormContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             } else {
-                Toast.error('No patient found with this Token or Mobile Number');
+                Toast.error(`No patient found for "${rawVal}"`);
             }
         } catch (e) {
             console.error('Error during primary search:', e);
@@ -244,7 +262,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Auto add next row when medicine is selected/entered in the last row
-        const medInput = tr.querySelector('.med-search-input');
         const autoAddNextRow = () => {
             const isLast = (tr === prescriptionTableBody.lastElementChild);
             if (isLast && medInput.value.trim() !== '') {

@@ -22,7 +22,7 @@ const PatientAPI = {
     return API.request(`/patients?${query}`);
   },
 
-  getPatientByToken: (token) => API.request(`/patients/${token}`),
+  getPatientByToken: (token) => API.request(`/patients/${encodeURIComponent(String(token).replace('#', '').trim())}`),
 
   getPatientById: (id) => API.request(`/patients/id/${id}`),
 
