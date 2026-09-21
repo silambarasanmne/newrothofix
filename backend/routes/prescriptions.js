@@ -5,7 +5,7 @@ const { authenticateToken, requireRole } = require('./auth');
 const { logAudit } = require('../middleware/audit');
 
 // POST /api/prescriptions - Create or Update prescription/consultation
-router.post('/', authenticateToken, requireRole('Doctor'), (req, res) => {
+router.post('/', authenticateToken, requireRole('Doctor', 'Medical Manager', 'Admin'), (req, res) => {
   try {
     const { patient_token, patient_mobile, patient_name, age, symptoms, complaints, diagnosis, doctor_comment, items } = req.body;
 

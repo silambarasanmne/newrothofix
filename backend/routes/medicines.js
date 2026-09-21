@@ -116,12 +116,14 @@ router.get('/template', (req, res) => {
       {
         'Medicine Name': 'Paracetamol 500mg',
         'Generic Name': 'Acetaminophen',
+        'Vendor Name': 'Cipla Pharma Wholesale',
         'Category': 'Analgesics',
         'Manufacturer': 'Cipla Ltd',
         'Batch Number': 'PCM2026X',
         'Expiry Date': '2027-12-31',
         'Purchase Price': 6.0,
         'Selling Price': 10.0,
+        'Units Per Strip': 10,
         'Current Stock': 50,
         'Minimum Stock': 10,
         'GST Percentage': 12.0,
@@ -159,6 +161,8 @@ router.get('/export-excel', authenticateToken, requireAdmin, (req, res) => {
       'Expiry Date': m.expiry_date,
       'Purchase Price (₹)': m.purchase_price,
       'Selling Price (₹)': m.selling_price,
+      'Units Per Strip': m.units_per_strip || 10,
+      'Unit Price (₹/Tablet)': Number(((m.selling_price || 0) / (m.units_per_strip || 10)).toFixed(2)),
       'Current Stock': m.current_stock,
       'Minimum Stock': m.minimum_stock,
       'GST %': m.gst_percent,
@@ -273,6 +277,7 @@ router.post('/import-preview', authenticateToken, requireAdmin, upload.single('e
       let expiryDate = getValue(row, ['Expiry Date', 'Expiry Dat', 'Expiry', 'Exp Date', 'Exp']);
       const rawPPrice = getValue(row, ['Purchase Price', 'Purchase P', 'Buy Price', 'Purchase']);
       const rawSPrice = getValue(row, ['Selling Price', 'Selling Pric', 'Sell Price', 'MRP', 'Price']);
+      const rawUnitsPerStrip = getValue(row, ['Units Per Strip', 'Units/Strip', 'Pack Size', 'Strip Size', 'Units Per Pack']);
       const rawStock = getValue(row, ['Current Stock', 'Current St', 'Stock', 'Qty']);
       const rawMinStock = getValue(row, ['Minimum Stock', 'Minimum', 'Min Stock']);
       const rawGst = getValue(row, ['GST Percentage', 'GST Perce', 'GST %', 'GST', 'Tax']);
@@ -281,6 +286,7 @@ router.post('/import-preview', authenticateToken, requireAdmin, upload.single('e
 
       const purchasePrice = parseFloat(rawPPrice || 0);
       const sellingPrice = parseFloat(rawSPrice || 0);
+      const unitsPerStrip = parseInt(rawUnitsPerStrip || 10, 10) || 10;
       const currentStock = parseInt(rawStock || 0, 10);
       const minimumStock = parseInt(rawMinStock || 10, 10);
       const gstPercent = parseFloat(rawGst || 12.0);
@@ -330,6 +336,7 @@ router.post('/import-preview', authenticateToken, requireAdmin, upload.single('e
         expiry_date: expiryDate,
         purchase_price: purchasePrice,
         selling_price: sellingPrice,
+        units_per_strip: unitsPerStrip,
         current_stock: currentStock,
         minimum_stock: minimumStock,
         gst_percent: gstPercent,
@@ -368,8 +375,8 @@ router.post('/import-confirm', authenticateToken, requireAdmin, (req, res) => {
 
     const insertStmt = db.prepare(`
       INSERT INTO medicines 
-      (name, generic_name, vendor_id, vendor_name, category, manufacturer, batch_number, expiry_date, purchase_price, selling_price, current_stock, minimum_stock, gst_percent, barcode, description)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (name, generic_name, vendor_id, vendor_name, category, manufacturer, batch_number, expiry_date, purchase_price, selling_price, units_per_strip, current_stock, minimum_stock, gst_percent, barcode, description)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const insertStockMovement = db.prepare(`
@@ -377,20 +384,30 @@ router.post('/import-confirm', authenticateToken, requireAdmin, (req, res) => {
       VALUES (?, ?, 0, ?, ?, 'Excel Import', ?)
     `);
 
+    const userName = (req.user && req.user.full_name) ? req.user.full_name : 'Admin';
     let importedCount = 0;
+
     for (const r of rows) {
       let vId = null;
       let vName = r.vendor_name ? r.vendor_name.trim() : '';
 
       if (vName) {
-        let vendor = db.prepare('SELECT id, name FROM vendors WHERE name LIKE ?').get(`%${vName.trim()}%`);
+        let vendor = db.prepare('SELECT id, name FROM vendors WHERE name LIKE ?').get(`%${vName}%`);
         if (!vendor) {
           const insertVendor = db.prepare('INSERT INTO vendors (name, contact_person, phone) VALUES (?, ?, ?)');
-          const vRes = insertVendor.run(vName.trim(), 'Sales Manager', '+91 98900 11223');
+          const vRes = insertVendor.run(vName, 'Sales Manager', '+91 98900 11223');
           vId = vRes.lastInsertRowid;
         } else {
           vId = vendor.id;
           vName = vendor.name;
+        }
+      }
+
+      let cleanBarcode = (r.barcode && String(r.barcode).trim() !== '') ? String(r.barcode).trim() : null;
+      if (cleanBarcode) {
+        const barcodeExists = db.prepare('SELECT id FROM medicines WHERE barcode = ?').get(cleanBarcode);
+        if (barcodeExists) {
+          cleanBarcode = `${cleanBarcode}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
         }
       }
 
@@ -403,18 +420,19 @@ router.post('/import-confirm', authenticateToken, requireAdmin, (req, res) => {
         r.manufacturer || '',
         r.batch_number || 'BATCH-001',
         r.expiry_date,
-        r.purchase_price,
-        r.selling_price,
-        r.current_stock,
-        r.minimum_stock,
-        r.gst_percent || 12.0,
-        r.barcode || null,
+        parseFloat(r.purchase_price || 0),
+        parseFloat(r.selling_price || 0),
+        parseInt(r.units_per_strip || 10, 10) || 10,
+        parseInt(r.current_stock || 0, 10),
+        parseInt(r.minimum_stock || 10, 10),
+        parseFloat(r.gst_percent || 12.0),
+        cleanBarcode,
         r.description || ''
       );
       const newMedId = res.lastInsertRowid;
 
       if (r.current_stock > 0) {
-        insertStockMovement.run(newMedId, r.name, r.current_stock, r.current_stock, req.user.full_name);
+        insertStockMovement.run(newMedId, r.name, r.current_stock, r.current_stock, userName);
       }
       importedCount++;
     }
@@ -426,7 +444,7 @@ router.post('/import-confirm', authenticateToken, requireAdmin, (req, res) => {
     });
   } catch (error) {
     console.error('Import confirm error:', error);
-    return res.status(500).json({ success: false, message: 'Failed to insert imported medicines into database.' });
+    return res.status(500).json({ success: false, message: `Import Failed: ${error.message}` });
   }
 });
 
@@ -449,7 +467,7 @@ router.post('/', authenticateToken, requireAdmin, (req, res) => {
   try {
     const {
       name, generic_name, vendor_id, vendor_name, category, manufacturer, batch_number,
-      expiry_date, purchase_price, selling_price, current_stock,
+      expiry_date, purchase_price, selling_price, units_per_strip, current_stock,
       minimum_stock, gst_percent, barcode, description
     } = req.body;
 
@@ -483,8 +501,8 @@ router.post('/', authenticateToken, requireAdmin, (req, res) => {
 
     const insertStmt = db.prepare(`
       INSERT INTO medicines 
-      (name, generic_name, vendor_id, vendor_name, category, manufacturer, batch_number, expiry_date, purchase_price, selling_price, current_stock, minimum_stock, gst_percent, barcode, description)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (name, generic_name, vendor_id, vendor_name, category, manufacturer, batch_number, expiry_date, purchase_price, selling_price, units_per_strip, current_stock, minimum_stock, gst_percent, barcode, description)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = insertStmt.run(
@@ -498,6 +516,7 @@ router.post('/', authenticateToken, requireAdmin, (req, res) => {
       expiry_date.trim(),
       pPrice,
       sPrice,
+      parseInt(units_per_strip || 10, 10) || 10,
       stock,
       minStock,
       parseFloat(gst_percent || 12.0),
@@ -534,7 +553,7 @@ router.put('/:id', authenticateToken, requireAdmin, (req, res) => {
 
     const {
       name, generic_name, vendor_id, vendor_name, category, manufacturer, batch_number,
-      expiry_date, purchase_price, selling_price, current_stock,
+      expiry_date, purchase_price, selling_price, units_per_strip, current_stock,
       minimum_stock, gst_percent, barcode, description
     } = req.body;
 
@@ -575,7 +594,7 @@ router.put('/:id', authenticateToken, requireAdmin, (req, res) => {
     const updateStmt = db.prepare(`
       UPDATE medicines SET
         name = ?, generic_name = ?, vendor_id = ?, vendor_name = ?, category = ?, manufacturer = ?, batch_number = ?,
-        expiry_date = ?, purchase_price = ?, selling_price = ?, current_stock = ?,
+        expiry_date = ?, purchase_price = ?, selling_price = ?, units_per_strip = ?, current_stock = ?,
         minimum_stock = ?, gst_percent = ?, barcode = ?, description = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `);
@@ -591,6 +610,7 @@ router.put('/:id', authenticateToken, requireAdmin, (req, res) => {
       expiry_date.trim(),
       pPrice,
       sPrice,
+      parseInt(units_per_strip || 10, 10) || 10,
       stock,
       minStock,
       parseFloat(gst_percent || 12.0),

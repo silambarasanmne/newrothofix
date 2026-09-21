@@ -355,8 +355,8 @@ const Billing = {
               <span>Exp: <strong>${m.expiry_date}</strong></span>
             </div>
             <div class="med-meta" style="margin-top: 0.5rem;">
-              <span class="med-price">${UI.formatCurrency(m.selling_price)}</span>
-              <span style="font-size: 0.8rem; color: #64748b;">Stock: <strong>${m.current_stock}</strong></span>
+              <span class="med-price">${UI.formatCurrency(m.selling_price)} <small style="font-size: 0.7rem; font-weight: normal; color: #64748b;">(₹${((m.selling_price || 0) / (m.units_per_strip || 10)).toFixed(2)}/tab)</small></span>
+              <span style="font-size: 0.8rem; color: #64748b;">Stock: <strong>${m.current_stock} tabs</strong></span>
             </div>
           </div>
         </div>
@@ -379,6 +379,9 @@ const Billing = {
       return;
     }
 
+    const unitsPerStrip = med.units_per_strip || 10;
+    const perTabletPrice = med.selling_price / unitsPerStrip;
+
     const existingIndex = this.cart.findIndex(item => Number(item.medicine.id) === Number(medicineId));
 
     if (existingIndex > -1) {
@@ -388,13 +391,13 @@ const Billing = {
         return;
       }
       this.cart[existingIndex].quantity += qtyToAdd;
-      this.cart[existingIndex].total_price = this.cart[existingIndex].quantity * med.selling_price;
+      this.cart[existingIndex].total_price = this.cart[existingIndex].quantity * perTabletPrice;
     } else {
       this.cart.push({
         medicine: med,
         quantity: qtyToAdd,
-        unit_price: med.selling_price,
-        total_price: med.selling_price * qtyToAdd
+        unit_price: perTabletPrice,
+        total_price: perTabletPrice * qtyToAdd
       });
     }
 
@@ -493,7 +496,8 @@ const Billing = {
           </td>
 
           <td class="p-2 text-right align-middle font-bold text-xs text-slate-800">
-            ${UI.formatCurrency(item.unit_price)}
+            ₹${Number(item.unit_price).toFixed(2)}/tab
+            <small class="text-slate-500 font-normal text-[10px] block">Strip: ₹${item.medicine.selling_price}</small>
           </td>
 
           <!-- TEXT BOX + DROPDOWN SELECTION OPTION FOR NUMBER OF MEDICINES -->

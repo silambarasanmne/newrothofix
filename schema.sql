@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS medicines (
   minimum_stock INTEGER NOT NULL DEFAULT 10,
   gst_percent REAL DEFAULT 12.0,
   barcode TEXT UNIQUE,
+  units_per_strip INTEGER DEFAULT 10,
   description TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,

@@ -1133,7 +1133,13 @@ const Medicines = {
           <td class="p-3.5 font-mono text-slate-700 font-bold">${this.escapeHtml(m.batch_number)}</td>
           <td class="p-3.5 font-semibold ${m.is_expired ? 'text-rose-600 font-bold' : 'text-slate-600'}">${m.expiry_date}</td>
           <td class="p-3.5 text-right font-semibold text-slate-700">₹${Number(m.purchase_price).toFixed(2)}</td>
-          <td class="p-3.5 text-right font-black text-sky-700">₹${Number(m.selling_price).toFixed(2)}</td>
+          <td class="p-3.5 text-right font-bold text-slate-800">₹${Number(m.selling_price).toFixed(2)}</td>
+          <td class="p-3.5 text-right font-black text-emerald-700">
+            ₹${((Number(m.selling_price) || 0) / (m.units_per_strip || 10)).toFixed(2)} <span class="text-[10px] text-emerald-600 font-normal">/ tab</span>
+          </td>
+          <td class="p-3.5 text-center font-bold text-slate-800 text-xs">
+            ${m.units_per_strip || 10} tabs/strip
+          </td>
           <td class="p-3.5 text-center font-black text-slate-900 text-sm">${m.current_stock}</td>
           <td class="p-3.5 text-center">${statusBadge}</td>
           <td class="p-3.5 text-center">
@@ -1160,8 +1166,8 @@ const Medicines = {
     document.getElementById('modal-med-title').textContent = 'Add New Medicine';
     document.getElementById('form-medicine').reset();
     document.getElementById('med-id-hidden').value = '';
-    const medVendorSelect = document.getElementById('med-vendor-select');
-    if (medVendorSelect) medVendorSelect.value = '';
+    const unitsInput = document.getElementById('med-units-per-strip');
+    if (unitsInput) unitsInput.value = '10';
     UI.openModal('modal-medicine');
   },
 
@@ -1183,6 +1189,8 @@ const Medicines = {
     document.getElementById('med-expiry').value = med.expiry_date;
     document.getElementById('med-pprice').value = med.purchase_price;
     document.getElementById('med-sprice').value = med.selling_price;
+    const unitsInput = document.getElementById('med-units-per-strip');
+    if (unitsInput) unitsInput.value = med.units_per_strip || 10;
     document.getElementById('med-stock').value = med.current_stock;
     document.getElementById('med-minstock').value = med.minimum_stock;
     document.getElementById('med-gst').value = med.gst_percent || 12.0;
@@ -1209,6 +1217,7 @@ const Medicines = {
         expiry_date: document.getElementById('med-expiry').value,
         purchase_price: document.getElementById('med-pprice').value,
         selling_price: document.getElementById('med-sprice').value,
+        units_per_strip: document.getElementById('med-units-per-strip')?.value || 10,
         current_stock: document.getElementById('med-stock').value,
         minimum_stock: document.getElementById('med-minstock').value,
         gst_percent: document.getElementById('med-gst').value,
@@ -1311,6 +1320,7 @@ const Medicines = {
         'Expiry Date (YYYY-MM-DD)': '2027-12-31',
         'Purchase Price': 6.00,
         'Selling Price': 10.00,
+        'Units Per Strip': 10,
         'Initial Stock': 50,
         'Minimum Stock': 10,
         'GST Percent': 12.00,
@@ -1336,7 +1346,7 @@ const Medicines = {
         const rows = XLSX.utils.sheet_to_json(worksheet);
 
         if (!rows || rows.length === 0) {
-          UI.showToast('Selected Excel file contains no data rows.', 'error');
+          UI.showToast('Uploaded Excel file contains no data.', 'error');
           return;
         }
 
@@ -1360,10 +1370,11 @@ const Medicines = {
           const vendorName = defaultVendorName || excelVendor;
           const category = row['Category'] || row['category'] || '';
           const batch = row['Batch Number'] || row['batch_number'] || '';
-          const expiry = row['Expiry Date (YYYY-MM-DD)'] || row['expiry_date'] || '';
+          const expiry = row['Expiry Date (YYYY-MM-DD)'] || row['Expiry Date'] || row['expiry_date'] || '';
           const pprice = parseFloat(row['Purchase Price'] || row['purchase_price'] || 0);
           const sprice = parseFloat(row['Selling Price'] || row['selling_price'] || 0);
-          const stock = parseInt(row['Initial Stock'] || row['current_stock'] || 0, 10);
+          const unitsPerStrip = parseInt(row['Units Per Strip'] || row['units_per_strip'] || row['Pack Size'] || 10, 10);
+          const stock = parseInt(row['Initial Stock'] || row['Current Stock'] || row['current_stock'] || 0, 10);
           const minstock = parseInt(row['Minimum Stock'] || row['minimum_stock'] || 10, 10);
 
           let isValid = true;
@@ -1389,6 +1400,7 @@ const Medicines = {
               expiry_date: String(expiry),
               purchase_price: pprice,
               selling_price: sprice,
+              units_per_strip: isNaN(unitsPerStrip) || unitsPerStrip <= 0 ? 10 : unitsPerStrip,
               current_stock: isNaN(stock) ? 0 : stock,
               minimum_stock: isNaN(minstock) ? 10 : minstock,
               gst_percent: parseFloat(row['GST Percent'] || row['gst_percent'] || 12.0),

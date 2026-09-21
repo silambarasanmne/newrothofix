@@ -82,11 +82,18 @@ function initDb() {
       minimum_stock INTEGER NOT NULL DEFAULT 10,
       gst_percent REAL DEFAULT 12.0,
       barcode TEXT UNIQUE,
+      units_per_strip INTEGER DEFAULT 10,
       description TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
+
+  try {
+    db.exec('ALTER TABLE medicines ADD COLUMN units_per_strip INTEGER DEFAULT 10;');
+  } catch (e) {
+    // Column already exists or table freshly created
+  }
 
   // 3. Sales Table
   db.exec(`

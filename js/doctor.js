@@ -316,16 +316,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!searchInput || !qtyInput) return;
 
                 const searchVal = searchInput.value;
-                const medIdMatch = searchVal.match(/- #(\d+)$/);
-                const medId = medIdMatch ? medIdMatch[1] : null;
-                const medName = medIdMatch ? searchVal.replace(medIdMatch[0], '').trim() : searchVal.trim();
+                if (!searchVal || searchVal.trim() === '') return;
+
+                let medIdMatch = searchVal.match(/- #(\d+)$/);
+                let medId = medIdMatch ? medIdMatch[1] : null;
+                let medName = medIdMatch ? searchVal.replace(medIdMatch[0], '').trim() : searchVal.trim();
+
+                // If user typed name without clicking datalist item, match against loaded inventory
+                if (!medId && medName && inventoryMedicines && inventoryMedicines.length > 0) {
+                    const matchedMed = inventoryMedicines.find(m => 
+                        m.name.toLowerCase() === medName.toLowerCase() || 
+                        (m.name + (m.generic_name ? ` (${m.generic_name})` : '')).toLowerCase() === medName.toLowerCase()
+                    );
+                    if (matchedMed) {
+                        medId = matchedMed.id;
+                    }
+                }
 
                 const qty = parseInt(qtyInput.value, 10);
                 const instruction = instSelect ? instSelect.value : 'After Food';
 
-                if (medId && qty > 0) {
+                if (medName && qty > 0) {
                     items.push({
-                        medicine_id: parseInt(medId, 10),
+                        medicine_id: medId ? parseInt(medId, 10) : null,
                         medicine_name: medName,
                         quantity: qty,
                         instructions: instruction
@@ -384,7 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (error) {
                 console.error('Submit consultation error:', error);
-                Toast.error('An error occurred while saving consultation');
+                Toast.error(error.message || 'An error occurred while saving consultation');
             } finally {
                 btnSubmitConsultation.disabled = false;
                 btnSubmitConsultation.innerHTML = `
@@ -712,5 +725,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial load of patient records table on page load
     loadPatients();
+    if (prescriptionTableBody && prescriptionTableBody.children.length === 0) {
+        addPrescriptionRow();
+    }
 });
 

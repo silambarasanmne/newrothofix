@@ -113,13 +113,15 @@ router.post('/sale', authenticateToken, requireRole('Billing Worker', 'Billing M
         });
       }
 
-      const itemTotal = med.selling_price * requestedQty;
+      const unitsPerStrip = med.units_per_strip || 10;
+      const unitPrice = item.unit_price ? parseFloat(item.unit_price) : (med.selling_price / unitsPerStrip);
+      const itemTotal = unitPrice * requestedQty;
       calculatedSubtotal += itemTotal;
 
       validatedItems.push({
         medicine: med,
         quantity: requestedQty,
-        unit_price: med.selling_price,
+        unit_price: unitPrice,
         item_total: itemTotal
       });
     }
