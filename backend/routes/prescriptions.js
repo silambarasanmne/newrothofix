@@ -19,93 +19,51 @@ router.post('/', authenticateToken, requireRole('Doctor', 'Medical Manager', 'Ad
 
     const safeItems = Array.isArray(items) ? items : [];
 
+    const doctorId = req.user ? req.user.id : null;
+    const doctorName = req.user ? req.user.full_name : 'Dr. Specialist';
+
     // Check for existing pending prescription for the same token to update instead of erroring out
     const existingPending = db.prepare("SELECT id FROM prescriptions WHERE patient_token = ? AND status = 'Pending'").get(patient_token);
 
-    db.exec('BEGIN TRANSACTION;');
     let prescriptionId = null;
 
-    try {
-      const doctorId = req.user ? req.user.id : null;
-      const doctorName = req.user ? req.user.full_name : 'Dr. Specialist';
+    if (existingPending) {
+      // UPDATE existing pending prescription & consultation
+      prescriptionId = existingPending.id;
 
-      if (existingPending) {
-        // UPDATE existing pending prescription & consultation
-        prescriptionId = existingPending.id;
+      db.prepare(`
+        UPDATE prescriptions 
+        SET doctor_id = ?, doctor_name = ?, complaints = ?, diagnosis = ?, submission_status = 'Submitted'
+        WHERE id = ?
+      `).run(
+        doctorId,
+        doctorName,
+        complaints || symptoms || '',
+        diagnosis || '',
+        prescriptionId
+      );
 
-        const updatePrescription = db.prepare(`
-          UPDATE prescriptions 
-          SET doctor_id = ?, doctor_name = ?, complaints = ?, diagnosis = ?, submission_status = 'Submitted'
-          WHERE id = ?
-        `);
-        updatePrescription.run(
-          doctorId,
-          doctorName,
-          complaints || symptoms || '',
-          diagnosis || '',
-          prescriptionId
-        );
-
-        // Update consultation record if exists, or insert if missing
-        const existingConsultation = db.prepare('SELECT id FROM consultations WHERE prescription_id = ?').get(prescriptionId);
-        if (existingConsultation) {
-          const updateConsultation = db.prepare(`
-            UPDATE consultations
-            SET patient_name = ?, patient_mobile = ?, doctor_id = ?, age = ?, symptoms = ?, doctor_comment = ?
-            WHERE prescription_id = ?
-          `);
-          updateConsultation.run(
-            patient_name || '',
-            patient_mobile || '',
-            doctorId,
-            parseInt(age) || 0,
-            symptoms || complaints || '',
-            doctor_comment.trim(),
-            prescriptionId
-          );
-        } else {
-          const insertConsultation = db.prepare(`
-            INSERT INTO consultations (prescription_id, patient_token, patient_name, patient_mobile, doctor_id, age, symptoms, doctor_comment)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-          `);
-          insertConsultation.run(
-            prescriptionId,
-            patient_token,
-            patient_name || '',
-            patient_mobile || '',
-            doctorId,
-            parseInt(age) || 0,
-            symptoms || complaints || '',
-            doctor_comment.trim()
-          );
-        }
-
-        // Clear existing items to be replaced with new items
-        db.prepare('DELETE FROM prescription_items WHERE prescription_id = ?').run(prescriptionId);
-
-      } else {
-        // 1. Insert New Prescription Record with Doctor Details
-        const insertPrescription = db.prepare(`
-          INSERT INTO prescriptions (patient_token, patient_mobile, doctor_id, doctor_name, complaints, diagnosis, submission_status, status)
-          VALUES (?, ?, ?, ?, ?, ?, 'Submitted', 'Pending')
-        `);
-        
-        const pResult = insertPrescription.run(
-          patient_token,
+      // Update consultation record if exists, or insert if missing
+      const existingConsultation = db.prepare('SELECT id FROM consultations WHERE prescription_id = ?').get(prescriptionId);
+      if (existingConsultation) {
+        db.prepare(`
+          UPDATE consultations
+          SET patient_name = ?, patient_mobile = ?, doctor_id = ?, age = ?, symptoms = ?, doctor_comment = ?
+          WHERE prescription_id = ?
+        `).run(
+          patient_name || '',
           patient_mobile || '',
           doctorId,
-          doctorName,
-          complaints || symptoms || '',
-          diagnosis || ''
+          parseInt(age) || 0,
+          symptoms || complaints || '',
+          doctor_comment.trim(),
+          prescriptionId
         );
-        prescriptionId = pResult.lastInsertRowid;
-
-        // 1.5. Insert Consultation Record
-        const insertConsultation = db.prepare(`
+      } else {
+        db.prepare(`
           INSERT INTO consultations (prescription_id, patient_token, patient_name, patient_mobile, doctor_id, age, symptoms, doctor_comment)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `);
-        insertConsultation.run(
+        `).run(
           prescriptionId,
           patient_token,
           patient_name || '',
@@ -117,50 +75,77 @@ router.post('/', authenticateToken, requireRole('Doctor', 'Medical Manager', 'Ad
         );
       }
 
-      // 2. Insert Prescription Items if any
-      if (safeItems.length > 0) {
-        const insertItem = db.prepare(`
-          INSERT INTO prescription_items (prescription_id, medicine_id, medicine_name, quantity, instructions)
-          VALUES (?, ?, ?, ?, ?)
-        `);
+      // Clear existing items to be replaced with new items
+      db.prepare('DELETE FROM prescription_items WHERE prescription_id = ?').run(prescriptionId);
 
-        const fallbackMed = db.prepare('SELECT id FROM medicines ORDER BY id ASC LIMIT 1').get();
-        const fallbackMedId = fallbackMed ? fallbackMed.id : 1;
+    } else {
+      // 1. Insert New Prescription Record with Doctor Details
+      const pResult = db.prepare(`
+        INSERT INTO prescriptions (patient_token, patient_mobile, doctor_id, doctor_name, complaints, diagnosis, submission_status, status)
+        VALUES (?, ?, ?, ?, ?, ?, 'Submitted', 'Pending')
+      `).run(
+        patient_token,
+        patient_mobile || '',
+        doctorId,
+        doctorName,
+        complaints || symptoms || '',
+        diagnosis || ''
+      );
+      prescriptionId = pResult.lastInsertRowid;
 
-        for (const item of safeItems) {
-          let validMedId = null;
-          if (item.medicine_id) {
-            const medExists = db.prepare('SELECT id FROM medicines WHERE id = ?').get(item.medicine_id);
-            if (medExists) validMedId = item.medicine_id;
-          }
-          if (!validMedId && item.medicine_name) {
-            const medByName = db.prepare('SELECT id FROM medicines WHERE name LIKE ?').get(`%${item.medicine_name.trim()}%`);
-            if (medByName) validMedId = medByName.id;
-          }
-
-          insertItem.run(
-            prescriptionId,
-            validMedId || fallbackMedId,
-            item.medicine_name || '',
-            item.quantity || 1,
-            item.instructions || ''
-          );
-        }
-      }
-
-      db.exec('COMMIT;');
-
-      logAudit(req, req.user, 'CONSULTATION_SUBMIT', 'DOCTOR', 'Prescription', prescriptionId, `Doctor '${doctorName}' saved consultation for token #${patient_token}`);
-
-      return res.json({ success: true, message: 'Prescription & Consultation saved successfully.', prescription_id: prescriptionId });
-    } catch (txError) {
-      db.exec('ROLLBACK;');
-      console.error('Failed to save prescription:', txError);
-      return res.status(500).json({ success: false, message: 'Failed to save prescription.' });
+      // 1.5. Insert Consultation Record
+      db.prepare(`
+        INSERT INTO consultations (prescription_id, patient_token, patient_name, patient_mobile, doctor_id, age, symptoms, doctor_comment)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        prescriptionId,
+        patient_token,
+        patient_name || '',
+        patient_mobile || '',
+        doctorId,
+        parseInt(age) || 0,
+        symptoms || complaints || '',
+        doctor_comment.trim()
+      );
     }
+
+    // 2. Insert Prescription Items if any
+    if (safeItems.length > 0) {
+      const insertItem = db.prepare(`
+        INSERT INTO prescription_items (prescription_id, medicine_id, medicine_name, quantity, instructions)
+        VALUES (?, ?, ?, ?, ?)
+      `);
+
+      const fallbackMed = db.prepare('SELECT id FROM medicines ORDER BY id ASC LIMIT 1').get();
+      const fallbackMedId = fallbackMed ? fallbackMed.id : 1;
+
+      for (const item of safeItems) {
+        let validMedId = null;
+        if (item.medicine_id) {
+          const medExists = db.prepare('SELECT id FROM medicines WHERE id = ?').get(item.medicine_id);
+          if (medExists) validMedId = item.medicine_id;
+        }
+        if (!validMedId && item.medicine_name) {
+          const medByName = db.prepare('SELECT id FROM medicines WHERE name LIKE ?').get(`%${item.medicine_name.trim()}%`);
+          if (medByName) validMedId = medByName.id;
+        }
+
+        insertItem.run(
+          prescriptionId,
+          validMedId || fallbackMedId,
+          item.medicine_name || '',
+          item.quantity || 1,
+          item.instructions || ''
+        );
+      }
+    }
+
+    logAudit(req, req.user, 'CONSULTATION_SUBMIT', 'DOCTOR', 'Prescription', prescriptionId, `Doctor '${doctorName}' saved consultation for token #${patient_token}`);
+
+    return res.json({ success: true, message: 'Prescription & Consultation saved successfully.', prescription_id: prescriptionId });
   } catch (error) {
-    console.error('Prescription POST error:', error);
-    return res.status(500).json({ success: false, message: 'Server error while saving prescription.' });
+    console.error('Prescription POST error:', error.message, error.stack);
+    return res.status(500).json({ success: false, message: 'Failed to save prescription: ' + error.message });
   }
 });
 
