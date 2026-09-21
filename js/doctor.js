@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadInventory() {
         try {
             const res = await apiRequest('/medicines?limit=500');
-            if (res && res.success) {
+            if (res && res.success && Array.isArray(res.medicines)) {
                 inventoryMedicines = res.medicines;
 
                 let datalist = document.getElementById('med-datalist');
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.body.appendChild(datalist);
                 }
                 datalist.innerHTML = inventoryMedicines.map(m => {
-                    const genericStr = m.generic_name ? ` (${escapeHtml(m.generic_name)})` : '';
+                    const genericStr = (m.generic_name && m.generic_name.toLowerCase() !== m.name.toLowerCase()) ? ` (${escapeHtml(m.generic_name)})` : '';
                     return `<option value="${escapeHtml(m.name)}${genericStr} - #${m.id}">Stock: ${m.current_stock || 0}</option>`;
                 }).join('');
             }
@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         if (prescRes.prescription.items && prescRes.prescription.items.length > 0) {
                             prescRes.prescription.items.forEach(item => {
-                                addPrescriptionRow(item.medicine_id, item.quantity, item.instructions);
+                                addPrescriptionRow(item.medicine_id, item.quantity, item.instructions, item.medicine_name);
                             });
                         } else {
                             addPrescriptionRow();
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function addPrescriptionRow(medId = '', qty = 1, instruction = '') {
+    function addPrescriptionRow(medId = '', qty = 1, instruction = '', medName = '') {
         if (!prescriptionTableBody) return;
         rowIdCounter++;
         const rowId = rowIdCounter;
@@ -195,8 +195,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let initialMedValue = '';
         if (medId) {
-            const m = inventoryMedicines.find(x => x.id === parseInt(medId));
-            if (m) initialMedValue = `${m.name} (${m.generic_name}) - #${m.id}`;
+            const m = inventoryMedicines.find(x => Number(x.id) === Number(medId));
+            if (m) {
+                const genericStr = (m.generic_name && m.generic_name.toLowerCase() !== m.name.toLowerCase()) ? ` (${m.generic_name})` : '';
+                initialMedValue = `${m.name}${genericStr} - #${m.id}`;
+            } else if (medName) {
+                initialMedValue = `${medName} - #${medId}`;
+            } else {
+                initialMedValue = `#${medId}`;
+            }
+        } else if (medName) {
+            initialMedValue = medName;
         }
 
         tr.innerHTML = `
@@ -223,6 +232,14 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.remove();
             if (prescriptionTableBody.children.length === 0) {
                 addPrescriptionRow();
+            }
+        });
+
+        // Ensure inventory is loaded when focusing on search input
+        const medInput = tr.querySelector('.med-search-input');
+        medInput.addEventListener('focus', () => {
+            if (inventoryMedicines.length === 0) {
+                loadInventory();
             }
         });
 

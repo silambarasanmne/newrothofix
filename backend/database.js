@@ -382,6 +382,34 @@ function initDb() {
   seedData();
 }
 
+function seedInitialMedicines() {
+  const count = db.prepare('SELECT COUNT(*) as count FROM medicines').get();
+  if (count && count.count > 0) return;
+
+  const insertMed = db.prepare(`
+    INSERT INTO medicines (name, generic_name, category, manufacturer, batch_number, expiry_date, purchase_price, selling_price, current_stock, minimum_stock, units_per_strip, description)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  const initialMeds = [
+    ['Paracetamol 500mg', 'Paracetamol', 'Tablet', 'Cipla', 'PCM2026A', '2028-12-31', 1.5, 2.5, 500, 50, 10, 'Analgesic and antipyretic'],
+    ['Dolo 650mg', 'Paracetamol 650mg', 'Tablet', 'Micro Labs', 'DOLO2026B', '2028-10-31', 2.0, 3.5, 400, 40, 15, 'Pain relief and fever control'],
+    ['Amoxicillin 500mg', 'Amoxicillin', 'Capsule', 'Sun Pharma', 'AMX2026C', '2027-08-31', 5.0, 8.0, 300, 30, 10, 'Antibiotic'],
+    ['Cetirizine 10mg', 'Cetirizine HCl', 'Tablet', 'Dr. Reddy', 'CET2026D', '2028-05-31', 1.0, 2.0, 600, 50, 10, 'Antihistamine for allergies'],
+    ['Pantoprazole 40mg', 'Pantoprazole Sodium', 'Tablet', 'Alkem', 'PAN2026E', '2027-11-30', 4.0, 7.0, 350, 35, 10, 'Proton pump inhibitor for acidity'],
+    ['Azithromycin 500mg', 'Azithromycin', 'Tablet', 'Zydus', 'AZI2026F', '2027-06-30', 12.0, 18.0, 200, 20, 3, 'Broad spectrum antibiotic'],
+    ['Ibuprofen 400mg', 'Ibuprofen', 'Tablet', 'Abbott', 'IBU2026G', '2028-04-30', 2.5, 4.0, 250, 25, 10, 'NSAID for pain and inflammation'],
+    ['Omeprazole 20mg', 'Omeprazole', 'Capsule', 'Lupin', 'OME2026H', '2027-09-30', 3.0, 5.5, 300, 30, 10, 'Antacid capsule'],
+    ['Calcium + Vitamin D3', 'Calcium Carbonate & Cholecalciferol', 'Tablet', 'Torrent', 'CAL2026I', '2028-01-31', 6.0, 10.0, 400, 40, 15, 'Bone and calcium supplement'],
+    ['ORS Sachet', 'Oral Rehydration Salts', 'Powder', 'FDC', 'ORS2026J', '2028-12-31', 10.0, 15.0, 500, 50, 1, 'Rehydration powder']
+  ];
+
+  for (const m of initialMeds) {
+    insertMed.run(...m);
+  }
+  console.log('✅ Seeded initial essential medicines list');
+}
+
 function seedData() {
   // Ensure default superadmin account exists
   const salt = bcrypt.genSaltSync(10);
@@ -391,6 +419,9 @@ function seedData() {
   `);
 
   insertUser.run('superadmin', bcrypt.hashSync('superadmin', salt), 'Super Administrator', 'superadmin@clinic.com', 'Super Admin');
+
+  // Ensure essential medicines exist
+  seedInitialMedicines();
 }
 
 function seedHistoricalSales() {

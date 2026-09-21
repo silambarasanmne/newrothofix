@@ -116,8 +116,15 @@ router.post('/', authenticateToken, requireRole('Doctor', 'Medical Manager', 'Ad
         VALUES (?, ?, ?, ?, ?)
       `);
 
-      const fallbackMed = db.prepare('SELECT id FROM medicines ORDER BY id ASC LIMIT 1').get();
-      const fallbackMedId = fallbackMed ? fallbackMed.id : 1;
+      let fallbackMed = db.prepare('SELECT id FROM medicines ORDER BY id ASC LIMIT 1').get();
+      if (!fallbackMed) {
+        const info = db.prepare(`
+          INSERT INTO medicines (name, generic_name, category, manufacturer, batch_number, expiry_date, purchase_price, selling_price, current_stock, minimum_stock)
+          VALUES ('General Medicine', 'General', 'Tablet', 'General', 'GEN2026', '2030-12-31', 0, 0, 9999, 10)
+        `).run();
+        fallbackMed = { id: info.lastInsertRowid };
+      }
+      const fallbackMedId = fallbackMed.id;
 
       for (const item of safeItems) {
         let validMedId = null;
@@ -126,14 +133,15 @@ router.post('/', authenticateToken, requireRole('Doctor', 'Medical Manager', 'Ad
           if (medExists) validMedId = item.medicine_id;
         }
         if (!validMedId && item.medicine_name) {
-          const medByName = db.prepare('SELECT id FROM medicines WHERE name LIKE ?').get(`%${item.medicine_name.trim()}%`);
+          const cleanName = item.medicine_name.trim();
+          const medByName = db.prepare('SELECT id FROM medicines WHERE name LIKE ? OR generic_name LIKE ?').get(`%${cleanName}%`, `%${cleanName}%`);
           if (medByName) validMedId = medByName.id;
         }
 
         insertItem.run(
           prescriptionId,
           validMedId || fallbackMedId,
-          item.medicine_name || '',
+          item.medicine_name || 'General Medicine',
           item.quantity || 1,
           item.instructions || ''
         );
