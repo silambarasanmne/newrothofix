@@ -184,6 +184,7 @@ function initDb() {
       patient_token INTEGER NOT NULL,
       patient_name TEXT,
       patient_mobile TEXT,
+      doctor_id INTEGER,
       age INTEGER,
       symptoms TEXT,
       doctor_comment TEXT,
@@ -345,6 +346,8 @@ function initDb() {
   addColumnIfNotExists('prescriptions', 'complaints TEXT');
   addColumnIfNotExists('prescriptions', 'diagnosis TEXT');
   addColumnIfNotExists('prescriptions', 'submission_status TEXT DEFAULT "Submitted"');
+
+  addColumnIfNotExists('consultations', 'doctor_id INTEGER');
 
   addColumnIfNotExists('patients', 'gender TEXT DEFAULT "Male"');
   addColumnIfNotExists('vendor_purchases', 'bill_image TEXT');
